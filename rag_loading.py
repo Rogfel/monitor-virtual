@@ -8,13 +8,16 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-def test_search(queries=None, top_k=10):
+def search(queries=None, top_k=10):
     """
     Perform searches using the SupabaseRAG client.
     
     Args:
-        queries (list): List of search queries. If None, default queries will be used.
+        queries (list or str): Search queries. If None, default queries will be used.
         top_k (int): Number of top results to return for each query.
+        
+    Returns:
+        dict: Dictionary containing search results.
     """
     # Get Supabase credentials from environment variables or set them directly
     supabase_url = os.getenv("SUPABASE_URL")
@@ -27,10 +30,14 @@ def test_search(queries=None, top_k=10):
         # Uncomment and set your credentials here if not using environment variables
         # supabase_url = "YOUR_SUPABASE_URL"
         # supabase_key = "YOUR_SUPABASE_API_KEY"
-        return
+        return {"error": "Missing Supabase credentials"}
     
     # Initialize the SupabaseRAG client
     rag = SupabaseRAG(supabase_url, supabase_key)
+    
+    # Handle string query by converting to list
+    if isinstance(queries, str):
+        queries = [queries]
     
     # Use default queries if none provided
     if queries is None:
@@ -40,6 +47,9 @@ def test_search(queries=None, top_k=10):
             "Dime os principais elementos do arco"
         ]
     
+    # Prepare response dictionary
+    response = {"results": []}
+    
     # Perform searches
     print("\nPerforming searches...")
     for query in queries:
@@ -47,16 +57,38 @@ def test_search(queries=None, top_k=10):
             print(f"\nSearch query: '{query}'")
             results = rag.search_documents(query, top_k=top_k)
             
+            query_results = {
+                "query": query,
+                "matches": []
+            }
+            
             if results:
                 print(f"Found {len(results)} results:")
                 for i, result in enumerate(results, 1):
                     print(f"{i}. Title: {result['titulo']}")
                     print(f"   Similarity: {result['similarity']:.4f}")
                     print(f"   Document: {result['documento'][:100]}...")
+                    
+                    # Add result to response
+                    query_results["matches"].append({
+                        "title": result['titulo'],
+                        "similarity": result['similarity'],
+                        "document": result['documento']
+                    })
             else:
                 print("No results found.")
+                
+            response["results"].append(query_results)
         except Exception as e:
-            print(f"Error searching for '{query}': {e}")
+            error_msg = f"Error searching for '{query}': {str(e)}"
+            print(error_msg)
+            response["results"].append({
+                "query": query,
+                "error": error_msg,
+                "matches": []
+            })
+    
+    return response
 
 
 def loading_from_path(data_path="data/", create_function=True):
@@ -134,7 +166,7 @@ def main():
     if args.command == "from-path":
         loading_from_path(data_path=args.path, create_function=not args.no_create_function)
     elif args.command == "search":
-        test_search(queries=args.queries, top_k=args.top_k)
+        search(queries=args.queries, top_k=args.top_k)
     else:
         parser.print_help()
 

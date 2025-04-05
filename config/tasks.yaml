@@ -4,7 +4,7 @@ chat_task:
     {question} 
     Tomar como base o conhecimento fornecido:
     {know-how}
-    Score de similaridade: {score}
+    Scores correspondente de similaridade: {scores}
   expected_output: >
     Crie uma resposta concisa e bem argumentada sobre a pergunta realizada e seu análise do relatório.
     Acrecentar que qualquer dúvida pode consultar a seu professor
