@@ -1,7 +1,7 @@
 import os
 import fitz  # PyMuPDF
 import numpy as np
-from supabase_rag import SupabaseRAG, get_embedding
+from rag.supabase_rag import SupabaseRAG, get_embedding
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -127,7 +127,6 @@ def process_pdf_to_supabase(pdf_path, title_prefix="", supabase_url=None, supaba
     except Exception as e:
         print(f"Warning: Could not create match_documents function: {e}")
         print("Proceeding with document insertion anyway...")
-    rag = SupabaseRAG(supabase_url, supabase_key)
     
     # Insert chunks into Supabase using batch processing
     print("Inserting chunks into Supabase...")
