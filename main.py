@@ -47,19 +47,13 @@ class QuestionRequest(BaseModel):
 
 @app.post("/api/v1/monitor", response_model=Dict)
 async def chat(QRequest: QuestionRequest):
-    response = search(queries=QRequest.question, top_k=10)
+    response = search(queries=QRequest.question, top_k=15)
 
     documents = [doc['document'] for doc in response["results"][0]["matches"]]
     scores = [doc['similarity'] for doc in response["results"][0]["matches"]]
 
     result = agent.crew().kickoff(inputs={"question": QRequest.question, "know-how": documents, "scores": scores})
     
-    # Convert CrewOutput to dictionary
-    if hasattr(result, 'json_dict') and result.json_dict is not None:
-        return result.json_dict
-    elif hasattr(result, '__dict__'):
-        # Convert object to dict, excluding private attributes
-        return {k: v for k, v in result.__dict__.items() if not k.startswith('_')}
-    else:
-        # Fallback to jsonable_encoder for proper JSON serialization
-        return {"response": jsonable_encoder(result)}
+    return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=jsonable_encoder(result))

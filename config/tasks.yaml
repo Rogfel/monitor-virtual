@@ -9,4 +9,4 @@ chat_task:
     Crie uma resposta concisa e bem argumentada sobre a pergunta realizada e seu análise do relatório.
     Acrecentar que qualquer dúvida pode consultar a seu professor
     Fazer uma avaliação do score de similaridade dos dados fornecidos com a pergunta.
-    Para baixo score responder
+    Elimina ```html e ``` na resposta
