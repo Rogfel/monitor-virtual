@@ -125,11 +125,15 @@ def loading_from_path(data_path="data/", create_function=True):
             print(f"Error creating function: {e}")
     
     # Insert documents
-    print("\nInserting documents...")
-    pdf_files = glob.glob(os.path.join(data_path, "*.pdf"))
+    print("\nInserting documents in recursive mode...")
+    pdf_files = []
+    for root, dirs, files in os.walk(data_path):
+        for file in files:
+            if file.lower().endswith('.pdf'):
+                pdf_files.append(os.path.join(root, file))
     
     if not pdf_files:
-        print(f"No PDF files found in {data_path}")
+        print(f"No PDF files found in {data_path} or its subdirectories")
         return
         
     for pdf_path in pdf_files:
