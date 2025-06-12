@@ -1,7 +1,7 @@
 import os
 import glob
 import argparse
-from rag.supabase_rag import SupabaseRAG
+from rag.raptor_supabase import RaptorSupabase
 from rag.process_pdf_to_supabase import process_pdf_to_supabase
 from dotenv import load_dotenv
 
@@ -10,7 +10,7 @@ load_dotenv()
 
 def search(queries=None, top_k=10):
     """
-    Perform searches using the SupabaseRAG client.
+    Perform searches using the RaptorSupabase client.
     
     Args:
         queries (list or str): Search queries. If None, default queries will be used.
@@ -26,14 +26,10 @@ def search(queries=None, top_k=10):
     if not supabase_url or not supabase_key:
         print("Please set your SUPABASE_URL and SUPABASE_KEY environment variables")
         print("You can add them to your .env file or set them directly in this script")
-        
-        # Uncomment and set your credentials here if not using environment variables
-        # supabase_url = "YOUR_SUPABASE_URL"
-        # supabase_key = "YOUR_SUPABASE_API_KEY"
         return {"error": "Missing Supabase credentials"}
     
-    # Initialize the SupabaseRAG client
-    rag = SupabaseRAG(supabase_url, supabase_key)
+    # Initialize the RaptorSupabase client
+    raptor = RaptorSupabase(supabase_url, supabase_key)
     
     # Handle string query by converting to list
     if isinstance(queries, str):
@@ -55,7 +51,7 @@ def search(queries=None, top_k=10):
     for query in queries:
         try:
             print(f"\nSearch query: '{query}'")
-            results = rag.search_documents(query, top_k=top_k)
+            results = raptor.search(query, top_k=top_k)
             
             query_results = {
                 "query": query,
@@ -65,15 +61,18 @@ def search(queries=None, top_k=10):
             if results:
                 print(f"Found {len(results)} results:")
                 for i, result in enumerate(results, 1):
-                    print(f"{i}. Title: {result['titulo']}")
+                    print(f"{i}. Document ID: {result['document_id']}")
+                    print(f"   Level: {result['level']}")
                     print(f"   Similarity: {result['similarity']:.4f}")
-                    print(f"   Document: {result['documento'][:100]}...")
+                    print(f"   Text: {result['text'][:100]}...")
                     
                     # Add result to response
                     query_results["matches"].append({
-                        "title": result['titulo'],
+                        "document_id": result['document_id'],
+                        "level": result['level'],
                         "similarity": result['similarity'],
-                        "document": result['documento']
+                        "text": result['text'],
+                        "metadata": result['metadata']
                     })
             else:
                 print("No results found.")
@@ -93,11 +92,11 @@ def search(queries=None, top_k=10):
 
 def loading_from_path(data_path="data/", create_function=True):
     """
-    Load documents from a specified path into Supabase.
+    Load documents from a specified path into Supabase using RAPTOR.
     
     Args:
         data_path (str): Path to the directory containing PDF files.
-        create_function (bool): Whether to create the match_documents function in Supabase.
+        create_function (bool): Whether to create the match_raptor_nodes function in Supabase.
     """
     # Get Supabase credentials from environment variables or set them directly
     supabase_url = os.getenv("SUPABASE_URL")
@@ -106,20 +105,16 @@ def loading_from_path(data_path="data/", create_function=True):
     if not supabase_url or not supabase_key:
         print("Please set your SUPABASE_URL and SUPABASE_KEY environment variables")
         print("You can add them to your .env file or set them directly in this script")
-        
-        # Uncomment and set your credentials here if not using environment variables
-        # supabase_url = "YOUR_SUPABASE_URL"
-        # supabase_key = "YOUR_SUPABASE_API_KEY"
         return
     
-    # Initialize the SupabaseRAG client
-    rag = SupabaseRAG(supabase_url, supabase_key)
+    # Initialize the RaptorSupabase client
+    raptor = RaptorSupabase(supabase_url, supabase_key)
     
-    # Create the match_documents function in Supabase (only need to run this once)
+    # Create the match_raptor_nodes function in Supabase (only need to run this once)
     if create_function:
         try:
-            print("Creating match_documents function in Supabase...")
-            result = rag.create_match_documents_function()
+            print("Creating match_raptor_nodes function in Supabase...")
+            result = raptor.create_match_function()
             print(result)
         except Exception as e:
             print(f"Error creating function: {e}")
@@ -138,27 +133,30 @@ def loading_from_path(data_path="data/", create_function=True):
         
     for pdf_path in pdf_files:
         try:
-            num_chunks = process_pdf_to_supabase(
+            document_id = process_pdf_to_supabase(
                 pdf_path,
                 pdf_path[:-4].split('/')[-1],
                 supabase_url,
                 supabase_key
             )
-            print(f"Inserted: {pdf_path} with {num_chunks} chunks")
+            if document_id:
+                print(f"Successfully processed: {pdf_path} (Document ID: {document_id})")
+            else:
+                print(f"Failed to process: {pdf_path}")
         except Exception as e:
-            print(f"Error inserting document '{pdf_path}': {e}")
+            print(f"Error processing document '{pdf_path}': {e}")
 
 
 def main():
     """Main function to parse command line arguments and execute the appropriate function."""
-    parser = argparse.ArgumentParser(description="Supabase RAG operations")
+    parser = argparse.ArgumentParser(description="RAPTOR RAG operations")
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
     
     # Parser for loading_from_path command
     load_parser = subparsers.add_parser("from-path", help="Load documents from a path into Supabase")
     load_parser.add_argument("--path", default="data/", help="Path to the directory containing PDF files")
     load_parser.add_argument("--no-create-function", action="store_true",
-                            help="Skip creating the match_documents function in Supabase")
+                            help="Skip creating the match_raptor_nodes function in Supabase")
     
     # Parser for test_search command
     search_parser = subparsers.add_parser("search", help="Test search functionality")
