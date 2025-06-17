@@ -1,5 +1,5 @@
 import os
-import fitz  # PyMuPDF
+import pymupdf
 from rag.raptor_supabase import RaptorSupabase
 from dotenv import load_dotenv
 
@@ -17,7 +17,7 @@ def extract_text_from_pdf(pdf_path):
     tuple: (extracted text, list of page numbers for each sentence)
     """
     # Open the PDF file
-    mypdf = fitz.open(pdf_path)
+    mypdf = pymupdf.open(pdf_path)
     all_text = ""  # Initialize an empty string to store the extracted text
     page_numbers = []  # Initialize a list to store page numbers for each sentence
     

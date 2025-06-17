@@ -1,5 +1,4 @@
 import os
-import glob
 import argparse
 from rag.raptor_supabase import RaptorSupabase
 from rag.process_pdf_to_supabase import process_pdf_to_supabase
@@ -130,7 +129,8 @@ def loading_from_path(data_path="data/", create_function=True):
     if not pdf_files:
         print(f"No PDF files found in {data_path} or its subdirectories")
         return
-        
+    
+    print(f"Found {len(pdf_files)} PDF files")    
     for pdf_path in pdf_files:
         try:
             document_id = process_pdf_to_supabase(

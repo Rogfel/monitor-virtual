@@ -2,7 +2,7 @@ import os
 from typing import List, Dict, Any, Optional
 from supabase import create_client, Client
 from dotenv import load_dotenv
-from .raptor_rag import RaptorRAG, ChunkNode
+from rag.raptor_rag import RaptorRAG, ChunkNode
 
 # Load environment variables
 load_dotenv()
@@ -29,17 +29,17 @@ class RaptorSupabase:
         # Initialize RAPTOR RAG
         self.raptor = RaptorRAG()
     
-    def _store_tree_node(self, node: ChunkNode, document_id: str, parent_id: Optional[str] = None) -> str:
+    def _store_tree_node(self, node: ChunkNode, document_id: int, parent_id: Optional[int] = None) -> int:
         """
         Store a tree node in Supabase.
         
         Args:
             node (ChunkNode): Node to store
-            document_id (str): ID of the parent document
-            parent_id (str, optional): ID of the parent node
+            document_id (int): ID of the parent document
+            parent_id (int, optional): ID of the parent node
             
         Returns:
-            str: ID of the stored node
+            int: ID of the stored node
         """
         # Insert node into Supabase
         response = self.supabase.table("raptor_nodes").insert({
@@ -53,15 +53,15 @@ class RaptorSupabase:
         
         return response.data[0]["id"]
     
-    def _store_tree(self, root: ChunkNode, document_id: str) -> None:
+    def _store_tree(self, root: ChunkNode, document_id: int) -> None:
         """
         Store entire tree in Supabase.
         
         Args:
             root (ChunkNode): Root node of the tree
-            document_id (str): ID of the parent document
+            document_id (int): ID of the parent document
         """
-        def store_node(node: ChunkNode, parent_id: Optional[str] = None):
+        def store_node(node: ChunkNode, parent_id: Optional[int] = None):
             # Store current node
             node_id = self._store_tree_node(node, document_id, parent_id)
             
@@ -82,19 +82,20 @@ class RaptorSupabase:
         Returns:
             str: ID of the stored document
         """
-        # Process document with RAPTOR
-        root = self.raptor.process_document(text)
+        # # Process document with RAPTOR
+        # root = self.raptor.process_document(text)
         
         # Store document metadata
-        doc_response = self.supabase.table("documents").insert({
+        doc_response = self.supabase.table("raptor_nodes").insert({
             "text": text,
+            "embedding": self.raptor.model.encode(text).tolist(),
             "metadata": metadata or {}
         }).execute()
         
         document_id = doc_response.data[0]["id"]
         
-        # Store RAPTOR tree
-        self._store_tree(root, document_id)
+        # # Store RAPTOR tree
+        # self._store_tree(root, document_id)
         
         return document_id
     
@@ -157,7 +158,7 @@ class RaptorSupabase:
         )
         returns table (
             id bigint,
-            document_id text,
+            document_id bigint,
             text text,
             level integer,
             metadata jsonb,

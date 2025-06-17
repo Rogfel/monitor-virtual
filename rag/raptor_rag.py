@@ -1,9 +1,15 @@
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Generator
 import heapq
 from dataclasses import dataclass
-from rag.supabase_rag import get_embedding
+import gc
+from tqdm import tqdm
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 @dataclass
 class ChunkNode:
@@ -25,33 +31,61 @@ class RaptorRAG:
         """
         self.model_name = model_name
         self.model = SentenceTransformer(model_name)
+        
+        # Load configuration from environment variables with defaults
+        self.batch_size = int(os.getenv("RAPTOR_BATCH_SIZE", "16"))
+        self.chunk_size = int(os.getenv("RAPTOR_CHUNK_SIZE", "1024"))
+        self.similarity_threshold = float(os.getenv("RAPTOR_SIMILARITY_THRESHOLD", "0.8"))
+        self.max_levels = int(os.getenv("RAPTOR_MAX_LEVELS", "2"))
+        
+        print(f"RAPTOR Configuration:")
+        print(f"- Batch Size: {self.batch_size}")
+        print(f"- Chunk Size: {self.chunk_size}")
+        print(f"- Similarity Threshold: {self.similarity_threshold}")
+        print(f"- Max Levels: {self.max_levels}")
     
-    def _create_initial_chunks(self, text: str, chunk_size: int = 512) -> List[str]:
+    def _create_initial_chunks(self, text: str) -> Generator[str, None, None]:
         """
         Create initial chunks from text using sliding window approach.
+        Uses a generator to avoid storing all chunks in memory.
         
         Args:
             text (str): Input text to chunk
-            chunk_size (int): Target size for each chunk in characters
+            
+        Yields:
+            str: Text chunks
+        """
+        overlap = self.chunk_size // 4  # 25% overlap between chunks
+        start = 0
+        
+        while start < len(text):
+            end = min(start + self.chunk_size, len(text))
+            chunk = text[start:end]
+            yield chunk
+            start = end - overlap
+    
+    def _compute_embeddings_batch(self, chunks: List[str]) -> List[np.ndarray]:
+        """
+        Compute embeddings for chunks in batches.
+        
+        Args:
+            chunks (List[str]): List of text chunks
             
         Returns:
-            List[str]: List of text chunks
+            List[np.ndarray]: List of embeddings
         """
-        chunks = []
-        overlap = chunk_size // 4  # 25% overlap between chunks
-        
-        start = 0
-        while start < len(text):
-            end = min(start + chunk_size, len(text))
-            chunk = text[start:end]
-            chunks.append(chunk)
-            start = end - overlap
-            
-        return chunks
+        embeddings = []
+        for i in range(0, len(chunks), self.batch_size):
+            batch = chunks[i:i + self.batch_size]
+            batch_embeddings = self.model.encode(batch, show_progress_bar=False)
+            embeddings.extend(batch_embeddings)
+            # Force garbage collection after each batch
+            gc.collect()
+        return embeddings
     
-    def _compute_similarity_matrix(self, embeddings: List[np.ndarray]) -> np.ndarray:
+    def _compute_similarity_matrix_batch(self, embeddings: List[np.ndarray]) -> np.ndarray:
         """
-        Compute similarity matrix between all embeddings.
+        Compute similarity matrix between embeddings in batches to save memory.
         
         Args:
             embeddings (List[np.ndarray]): List of embedding vectors
@@ -62,17 +96,28 @@ class RaptorRAG:
         n = len(embeddings)
         similarity_matrix = np.zeros((n, n))
         
-        for i in range(n):
-            for j in range(i + 1, n):
-                similarity = np.dot(embeddings[i], embeddings[j]) / (
-                    np.linalg.norm(embeddings[i]) * np.linalg.norm(embeddings[j])
-                )
-                similarity_matrix[i, j] = similarity_matrix[j, i] = similarity
+        # Process in batches to save memory
+        for i in range(0, n, self.batch_size):
+            end_i = min(i + self.batch_size, n)
+            for j in range(0, n, self.batch_size):
+                end_j = min(j + self.batch_size, n)
                 
+                # Compute similarities for current batch
+                for ii in range(i, end_i):
+                    for jj in range(j, end_j):
+                        if ii < jj:  # Only compute upper triangle
+                            similarity = np.dot(embeddings[ii], embeddings[jj]) / (
+                                np.linalg.norm(embeddings[ii]) * np.linalg.norm(embeddings[jj])
+                            )
+                            similarity_matrix[ii, jj] = similarity_matrix[jj, ii] = similarity
+                
+                # Force garbage collection after each batch
+                gc.collect()
+        
         return similarity_matrix
     
     def _merge_chunks(self, chunks: List[str], embeddings: List[np.ndarray], 
-                     similarity_matrix: np.ndarray, threshold: float = 0.7) -> List[Tuple[str, np.ndarray]]:
+                     similarity_matrix: np.ndarray) -> List[Tuple[str, np.ndarray]]:
         """
         Merge similar chunks based on similarity threshold.
         
@@ -80,7 +125,6 @@ class RaptorRAG:
             chunks (List[str]): List of text chunks
             embeddings (List[np.ndarray]): List of chunk embeddings
             similarity_matrix (np.ndarray): Similarity matrix between chunks
-            threshold (float): Similarity threshold for merging
             
         Returns:
             List[Tuple[str, np.ndarray]]: List of merged chunks and their embeddings
@@ -89,42 +133,47 @@ class RaptorRAG:
         merged = [False] * n
         merged_chunks = []
         
-        for i in range(n):
-            if merged[i]:
-                continue
+        # Process in smaller batches to save memory
+        for i in range(0, n, self.batch_size):
+            end_i = min(i + self.batch_size, n)
+            
+            for ii in range(i, end_i):
+                if merged[ii]:
+                    continue
+                    
+                current_chunk = chunks[ii]
+                current_embedding = embeddings[ii]
+                similar_indices = []
                 
-            current_chunk = chunks[i]
-            current_embedding = embeddings[i]
-            similar_indices = []
+                # Find similar chunks
+                for j in range(ii + 1, n):
+                    if not merged[j] and similarity_matrix[ii, j] > self.similarity_threshold:
+                        similar_indices.append(j)
+                
+                # Merge similar chunks
+                if similar_indices:
+                    for idx in similar_indices:
+                        current_chunk += " " + chunks[idx]
+                        current_embedding = (current_embedding + embeddings[idx]) / 2
+                        merged[idx] = True
+                    merged[ii] = True
+                    merged_chunks.append((current_chunk, current_embedding))
+                else:
+                    merged_chunks.append((chunks[ii], embeddings[ii]))
+                    merged[ii] = True
             
-            # Find similar chunks
-            for j in range(i + 1, n):
-                if not merged[j] and similarity_matrix[i, j] > threshold:
-                    similar_indices.append(j)
-            
-            # Merge similar chunks
-            if similar_indices:
-                for idx in similar_indices:
-                    current_chunk += " " + chunks[idx]
-                    current_embedding = (current_embedding + embeddings[idx]) / 2
-                    merged[idx] = True
-                merged[i] = True
-                merged_chunks.append((current_chunk, current_embedding))
-            else:
-                merged_chunks.append((chunks[i], embeddings[i]))
-                merged[i] = True
+            # Force garbage collection after each batch
+            gc.collect()
                 
         return merged_chunks
     
-    def _build_tree(self, chunks: List[str], embeddings: List[np.ndarray], 
-                   max_levels: int = 3) -> ChunkNode:
+    def _build_tree(self, chunks: List[str], embeddings: List[np.ndarray]) -> ChunkNode:
         """
         Build hierarchical tree structure from chunks.
         
         Args:
             chunks (List[str]): List of text chunks
             embeddings (List[np.ndarray]): List of chunk embeddings
-            max_levels (int): Maximum number of tree levels
             
         Returns:
             ChunkNode: Root node of the tree
@@ -138,15 +187,24 @@ class RaptorRAG:
                 metadata={"is_leaf": True}
             )
             
-        # Compute similarity matrix
-        similarity_matrix = self._compute_similarity_matrix(embeddings)
+        # Compute similarity matrix in batches
+        similarity_matrix = self._compute_similarity_matrix_batch(embeddings)
         
         # Create priority queue for merging
         pq = []
-        for i in range(len(chunks)):
-            for j in range(i + 1, len(chunks)):
-                similarity = similarity_matrix[i, j]
-                heapq.heappush(pq, (-similarity, i, j))
+        for i in range(0, len(chunks), self.batch_size):
+            end_i = min(i + self.batch_size, len(chunks))
+            for j in range(i, len(chunks), self.batch_size):
+                end_j = min(j + self.batch_size, len(chunks))
+                
+                for ii in range(i, end_i):
+                    for jj in range(j, end_j):
+                        if ii < jj:
+                            similarity = similarity_matrix[ii, jj]
+                            heapq.heappush(pq, (-similarity, ii, jj))
+                
+                # Force garbage collection after each batch
+                gc.collect()
         
         # Initialize nodes
         nodes = [ChunkNode(
@@ -158,7 +216,7 @@ class RaptorRAG:
         ) for chunk, emb in zip(chunks, embeddings)]
         
         # Merge nodes level by level
-        for level in range(max_levels - 1):
+        for level in range(self.max_levels - 1):
             if len(nodes) <= 1:
                 break
                 
@@ -196,39 +254,49 @@ class RaptorRAG:
             
             nodes = new_nodes
             
+            # Force garbage collection after each level
+            gc.collect()
+            
         return nodes[0] if nodes else None
     
-    def process_document(self, text: str, chunk_size: int = 512, 
-                        similarity_threshold: float = 0.7,
-                        max_levels: int = 3) -> ChunkNode:
+    def process_document(self, text: str) -> ChunkNode:
         """
         Process a document using RAPTOR algorithm.
         
         Args:
             text (str): Input document text
-            chunk_size (int): Target size for initial chunks
-            similarity_threshold (float): Threshold for merging similar chunks
-            max_levels (int): Maximum number of tree levels
             
         Returns:
             ChunkNode: Root node of the RAPTOR tree
         """
-        # Create initial chunks
-        initial_chunks = self._create_initial_chunks(text, chunk_size)
+        # Create initial chunks using generator
+        initial_chunks = list(self._create_initial_chunks(text))
         
-        # Generate embeddings for initial chunks
-        initial_embeddings = [self.model.encode(chunk) for chunk in initial_chunks]
+        # Generate embeddings in batches
+        print("Generating embeddings...")
+        initial_embeddings = self._compute_embeddings_batch(initial_chunks)
         
-        # Compute similarity matrix
-        similarity_matrix = self._compute_similarity_matrix(initial_embeddings)
+        # Compute similarity matrix in batches
+        print("Computing similarity matrix...")
+        # similarity_matrix = self._compute_similarity_matrix_batch(initial_embeddings)
         
-        # Merge similar chunks
-        merged_chunks, merged_embeddings = zip(*self._merge_chunks(
-            initial_chunks, initial_embeddings, similarity_matrix, similarity_threshold
-        ))
+        # # Merge similar chunks
+        # print("Merging chunks...")
+        # merged_chunks, merged_embeddings = zip(*self._merge_chunks(
+        #     initial_chunks, initial_embeddings
+        # ))
+        
+        # # Clear memory
+        # del initial_chunks, initial_embeddings
+        # gc.collect()
         
         # Build hierarchical tree
-        root = self._build_tree(merged_chunks, merged_embeddings, max_levels)
+        print("Building tree...")
+        root = self._build_tree(initial_chunks, initial_embeddings)
+        
+        # Clear memory
+        del initial_chunks, initial_embeddings
+        gc.collect()
         
         return root
     
