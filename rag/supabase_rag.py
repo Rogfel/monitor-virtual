@@ -182,6 +182,7 @@ class SupabaseRAG:
         batch_size = 50000
         results = []
         total_records = self.__total_records()
+
         while True:
             try:
                 # Perform vector similarity search using Supabase pgvector
