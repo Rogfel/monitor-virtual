@@ -15,46 +15,81 @@ def extract_text_from_pdf(pdf_path):
     pdf_path (str): Path to the PDF file.
 
     Returns:
-    tuple: (extracted text, list of page numbers for each sentence)
+    list: (extracted text by page)
     """
     # Open the PDF file
     mypdf = fitz.open(pdf_path)
-    all_text = ""  # Initialize an empty string to store the extracted text
-    page_numbers = []  # Initialize a list to store page numbers for each sentence
-    
+    all_pages_text = []
+
     # Iterate through each page in the PDF
-    for page_num, page in enumerate(mypdf, 1):
+    for page in mypdf:
         # Extract text from the current page
         page_text = page.get_text("text")
-        # Split into sentences and add page number for each
+        all_text = ''
+        # Split into sentences to remove spaces
         sentences = page_text.split(". ")
         for sentence in sentences:
             if sentence.strip():  # Only add non-empty sentences
                 all_text += sentence.strip() + ". "
-                page_numbers.append(page_num)
+        all_pages_text.append(all_text)
+    # Return the extracted text
+    return all_pages_text
 
-    # Return the extracted text and page numbers
-    return all_text.strip(), page_numbers
+def chunk_with_structure(page_text: str, page_number: int) -> list[dict]:
+        """Chunking pages text with structure detection"""
+        chunks_list = []
+        
+        lines = page_text.split('\n')
+        current_section = {
+                    "title": "",
+                    "content": "",
+                    "page_numbers": page_number
+                }
+        for line_index in range(len(lines)):
+            line = lines[line_index].strip()
+            if not line:
+                continue
+            
+            # Heuristic to detect headers
+            if (len(line) < 100 and 
+                line[0].isupper() and 
+                not line.endswith('.')):
 
-def split_text_into_semantic_chunks(text, page_numbers, threshold=90):
+                if current_section["content"] != "":
+                    chunks_list.append(current_section)
+                    current_section = {
+                        "title": "",
+                        "content": "",
+                        "page_numbers": page_number
+                    }
+                                        
+                # New section
+                current_section["title"] = line
+                current_section["content"] = lines[line_index+1]
+                line_index += 1
+            else:
+                current_section["content"] += line + " "  
+
+        chunks_list.append(current_section)
+        
+        return chunks_list
+
+def split_text_into_semantic_chunks(text, page_numbers):
     """
     Splits text into semantic chunks based on similarity.
 
     Args:
     text (str): Text to split.
     page_numbers (list): List of page numbers corresponding to each sentence.
-    threshold (int): Percentile threshold for splitting.
 
     Returns:
     tuple: (list of text chunks, list of chunk metadata)
     """
     # Splitting text into sentences (basic split)
-    sentences = text.split(". ")
+    sentences = chunk_with_structure(text)
     print(f"Number of sentences: {len(sentences)}")
     
-    # If there are too few sentences, return the whole text as one chunk
-    if len(sentences) <= 5:
-        return [text], [{"page_numbers": page_numbers}]
+   
     
     # Generate embeddings for all sentences at once using batch processing
     print(f"Generating embeddings for {len(sentences)} sentences...")
@@ -120,76 +155,80 @@ def process_pdf_to_supabase(pdf_path, title_prefix="", supabase_url=None, supaba
     """
     # Extract text from the PDF file
     print(f"Extracting text from {pdf_path}...")
-    extracted_text, page_numbers = extract_text_from_pdf(pdf_path)
+    extracted_text_list = extract_text_from_pdf(pdf_path)
     
     # Get the filename without extension for use in titles
     filename = os.path.basename(pdf_path)
     filename_without_ext = os.path.splitext(filename)[0]
     
-    if not title_prefix:
-        title_prefix = filename_without_ext
-    
-    # Split text into semantic chunks
-    print("Splitting text into semantic chunks...")
-    text_chunks, chunk_metadata = split_text_into_semantic_chunks(extracted_text, page_numbers)
-    print(f"Created {len(text_chunks)} semantic chunks.")
+    chunks_list = []
+    for page_number, page_text in enumerate(extracted_text_list):
+        page_chunks = chunk_with_structure(page_text, page_number)
+        chunks_list.extend(page_chunks)
+    print(f"Created {len(chunks_list)} sections chunks.")
+
+
+    # Add embeddings to chunks_list
+    embeddings = get_embedding([chunk["content"] for chunk in chunks_list],
+                               batch=True)
+    print(f"Created {len(embeddings)} embeddings.")
     
     # Initialize Supabase RAG client
     rag = SupabaseRAG(supabase_url, supabase_key)
     
-    # Ensure the match_documents function exists with the correct table name
-    try:
-        rag.create_match_documents_function()
-        print("Created or updated match_documents function.")
-    except Exception as e:
-        print(f"Warning: Could not create match_documents function: {e}")
-        print("Proceeding with document insertion anyway...")
-    
     # Insert chunks into Supabase using batch processing
     print("Inserting chunks into Supabase...")
     
-    # Pre-generate all titles and metadata
-    chunk_titles = [f"{title_prefix} - Chunk {i+1}" for i in range(len(text_chunks))]
-    chunk_numbers = list(range(1, len(text_chunks) + 1))
-    chunk_pages = [min(metadata["page_numbers"]) for metadata in chunk_metadata]  # Use the first page number for each chunk
-    
     # Process chunks in batches to avoid overwhelming the database
     batch_size = 10
-    for i in range(0, len(text_chunks), batch_size):
-        batch_chunks = text_chunks[i:i+batch_size]
-        batch_titles = chunk_titles[i:i+batch_size]
-        batch_numbers = chunk_numbers[i:i+batch_size]
-        batch_pages = chunk_pages[i:i+batch_size]
+    for i in range(0, len(chunks_list), batch_size):
+        batch_titles = [title_prefix] * batch_size
+        batch_chunks = chunks_list[i:i+batch_size]
+        batch_content = [chunk["content"] for chunk in batch_chunks]
+        batch_embeddings = embeddings[i:i+batch_size]
+        batch_section_titles = [chunk["title"] for chunk in batch_chunks]
+        batch_pages = [chunk["page_numbers"] for chunk in batch_chunks]
+        batch_pdf_path = [pdf_path] * batch_size
+        batch_nome_documento = [filename_without_ext] * batch_size
         
         try:
             # Use batch insertion for better performance
             rag.insert_documents_batch(
                 batch_titles,
-                batch_chunks,
-                nome_documento=filename_without_ext,
-                numero_chunks=batch_numbers,
-                paginas=batch_pages
+                batch_content,
+                batch_embeddings,
+                nome_documento=batch_nome_documento,
+                paginas=batch_pages,
+                pdf_path=batch_pdf_path,
+                section_titles=batch_section_titles
             )
-            print(f"Inserted batch {i//batch_size + 1}/{(len(text_chunks)-1)//batch_size + 1} " +
-                  f"(chunks {i+1}-{min(i+batch_size, len(text_chunks))}/{len(text_chunks)})")
+            print(f"Inserted batch {i//batch_size + 1}/{(len(chunks_list)-1)//batch_size + 1} " +
+                  f"(chunks {i+1}-{min(i+batch_size, len(chunks_list))}/{len(chunks_list)})")
         except Exception as e:
             print(f"Error inserting batch {i//batch_size + 1}: {e}")
             
             # Fall back to individual insertion if batch fails
-            for j, (chunk_title, chunk, chunk_num, chunk_page) in enumerate(zip(batch_titles, batch_chunks, batch_numbers, batch_pages)):
+            for j, (title, chunk, embedding,
+                    page_numbers, pdf_path,
+                    nome_documento, section_title) in enumerate(zip(batch_titles, batch_content,
+                                                     batch_embeddings, batch_pages,
+                                                     batch_pdf_path, batch_nome_documento,
+                                                     batch_section_titles)):
                 try:
                     rag.insert_document(
-                        chunk_title,
+                        title,
                         chunk,
-                        nome_documento=filename_without_ext,
-                        numero_chunk=chunk_num,
-                        pagina=chunk_page
+                        embedding,
+                        nome_documento=nome_documento,
+                        pagina=page_numbers,
+                        pdf_path=pdf_path,
+                        titulo_secao=section_title
                     )
-                    print(f"Inserted: {chunk_title} ({i+j+1}/{len(text_chunks)})")
+                    print(f"Inserted: {title_prefix} ({i+j+1}/{len(chunks_list)})")
                 except Exception as e:
                     print(f"Error inserting chunk {i+j+1}: {e}")
     
-    return len(text_chunks)
+    return len(chunks_list)
 
 if __name__ == "__main__":
     # Get Supabase credentials from environment variables

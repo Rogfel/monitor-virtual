@@ -47,10 +47,15 @@ class QuestionRequest(BaseModel):
 
 @app.post("/api/v1/monitor", response_model=Dict)
 async def chat(QRequest: QuestionRequest):
-    response = search(queries=QRequest.question, top_k=15)
+    response = search(queries=QRequest.question)
 
     documents = [doc['document'] for doc in response["results"][0]["matches"]]
     scores = [doc['similarity'] for doc in response["results"][0]["matches"]]
+
+    if len(documents) == 0:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=jsonable_encoder({"raw": "Não foi possível encontrar informações sobre a questão. Nesse caso, deve consultar a seu professor."}))
 
     result = agent.crew().kickoff(inputs={"question": QRequest.question, "know-how": documents, "scores": scores})
     

@@ -57,45 +57,67 @@ class SupabaseRAG:
         # Initialize SentenceTransformer model
         self.model_name = "all-MiniLM-L6-v2"
     
-    def insert_document(self, title, document_text, nome_documento=None, numero_chunk=None, pagina=None):
+    def __total_records(self):
+        response = self.supabase.table(self.table_name).select("*", count="exact").execute()
+        return response.count
+    
+    def insert_document(self, title, document_text, embedding, nome_documento=None,
+                        pagina=None, pdf_path=None, titulo_secao=None):
         """
         Insert a document into the Supabase table with its embedding.
         
         Args:
             title (str): Title of the document.
             document_text (str): Text content of the document.
+            embedding (np.ndarray): Embedding of the document.
             nome_documento (str): Name of the source document.
-            numero_chunk (int): Chunk number within the document.
             pagina (int): Page number where the chunk was found.
+            pdf_path (str): Path to the PDF file.
+            titulo_secao (str): Title of the section.
             
         Returns:
             dict: Response from Supabase.
         """
-        # Generate embedding for the document
-        embedding = get_embedding(document_text, self.model_name)
+        # Ensure embedding is a numpy array with correct shape
+        if not isinstance(embedding, np.ndarray):
+            embedding = np.array(embedding)
+        
+        # Ensure embedding has the correct shape (384 dimensions)
+        if embedding.shape != (384,):
+            raise ValueError(f"Embedding must have shape (384,), got {embedding.shape}")
+        
+        # Convert embedding to list and ensure it's a flat list of floats
+        embedding_list = embedding.astype(np.float32).tolist()
         
         # Insert document into Supabase
         response = self.supabase.table(self.table_name).insert({
             "titulo": title,
             "documento": document_text,
             "nome_documento": nome_documento,
-            "numero_chunk": numero_chunk,
             "pagina": pagina,
-            "embedding": embedding.tolist()  # Convert numpy array to list for JSON serialization
+            "pdf_path": pdf_path,
+            "titulo_secao": titulo_secao,
+            "embedding": embedding_list
         }).execute()
         
         return response
     
-    def insert_documents_batch(self, titles, documents_text, nome_documento=None, numero_chunks=None, paginas=None):
+    def insert_documents_batch(self, titles, documents_text,
+                               embeddings, nome_documento=None,
+                               numero_chunks=None, paginas=None,
+                               pdf_path=None, section_titles=None):
         """
         Insert multiple documents into the Supabase table with their embeddings.
         
         Args:
             titles (list): List of document titles.
             documents_text (list): List of document texts.
+            embeddings (list): List of embeddings.
             nome_documento (str): Name of the source document.
             numero_chunks (list): List of chunk numbers.
             paginas (list): List of page numbers.
+            pdf_path (str): Path to the PDF file.
+            section_titles (list): List of section titles.
             
         Returns:
             dict: Response from Supabase.
@@ -109,20 +131,20 @@ class SupabaseRAG:
         if paginas and len(paginas) != len(documents_text):
             raise ValueError("The number of page numbers must match the number of documents")
         
-        # Generate embeddings for all documents at once
-        embeddings = get_embedding(documents_text, self.model_name, batch=True)
         
         # Prepare data for batch insertion
         data = [
             {
-                "titulo": title,
+                "titulo": titles,
                 "documento": doc_text,
                 "nome_documento": nome_documento,
                 "numero_chunk": numero_chunks[i] if numero_chunks else None,
                 "pagina": paginas[i] if paginas else None,
-                "embedding": emb.tolist()  # Convert numpy array to list for JSON serialization
+                "embedding": embedding,
+                "pdf_path": pdf_path,
+                "titulo_secao": section_titles[i] if section_titles else None
             }
-            for i, (title, doc_text, emb) in enumerate(zip(titles, documents_text, embeddings))
+            for i, (doc_text, embedding) in enumerate(zip(documents_text, embeddings))
         ]
         
         # Insert documents into Supabase
@@ -130,13 +152,16 @@ class SupabaseRAG:
         
         return response
     
-    def search_documents(self, query_text, top_k=5, ensure_function=True):
+    def search_documents(self, query_text, top_k=int(os.getenv("TOP_VALUE")),
+                         match_threshold=float(os.getenv("MATCH_THRESHOLD")),
+                         ensure_function=False):
         """
         Search for the top k most similar documents to the query.
         
         Args:
             query_text (str): Query text to search for.
             top_k (int): Number of top results to return.
+            match_threshold (float): Minimum similarity score for a match.
             ensure_function (bool): Whether to ensure the match_documents function exists.
             
         Returns:
@@ -153,24 +178,34 @@ class SupabaseRAG:
         
         # Generate embedding for the query
         query_embedding = get_embedding(query_text, self.model_name)
-        
-        try:
-            # Perform vector similarity search using Supabase pgvector
-            response = self.supabase.rpc(
-                'match_documents',
-                {
-                    'query_embedding': query_embedding.tolist(),
-                    'match_threshold': 0.5,
-                    'match_count': top_k
-                }
-            ).execute()
+        offset = 0
+        batch_size = 50000
+        results = []
+        total_records = self.__total_records()
+        while True:
+            try:
+                # Perform vector similarity search using Supabase pgvector
+                response = self.supabase.rpc(
+                    'match_documents',
+                    {
+                        'query_embedding': query_embedding.tolist(),
+                        'match_threshold': match_threshold,
+                        'match_count': batch_size,
+                        'offset_value': offset
+                    }
+                ).execute()
+                results.extend(response.data)
+                offset += batch_size
+                if offset >= total_records:
+                    print(f"End of search, found {len(results)} results")
+                    return results
+                print(f"Found {len(response.data)} results, continuing...")
             
-            return response.data
-        except Exception as e:
-            print(f"Error during search: {e}")
-            print("This may be due to the match_documents function not existing or using the wrong table name.")
-            print(f"Make sure the function is created and uses the table '{self.table_name}'.")
-            return []
+            except Exception as e:
+                print(f"Error during search: {e}")
+                # print("This may be due to the match_documents function not existing or using the wrong table name.")
+                # print(f"Make sure the function is created and uses the table '{self.table_name}'.")
+                return []
     
     def create_match_documents_function(self):
         """
@@ -188,8 +223,9 @@ class SupabaseRAG:
             titulo text,
             documento text,
             nome_documento text,
-            numero_chunk integer,
             pagina integer,
+            pdf_path text,
+            titulo_secao text,
             embedding vector(384)
         );
 
@@ -203,14 +239,16 @@ class SupabaseRAG:
         create or replace function public.match_documents (
             query_embedding vector(384),
             match_threshold float,
-            match_count int
+            match_count int,
+            offset_value int
         )
         returns table (
             id bigint,
             titulo text,
             documento text,
             nome_documento text,
-            numero_chunk integer,
+            pdf_path text,
+            titulo_secao text,
             pagina integer,
             similarity float
         )
@@ -223,18 +261,20 @@ class SupabaseRAG:
                 d.titulo,
                 d.documento,
                 d.nome_documento,
-                d.numero_chunk,
+                d.pdf_path,
+                d.titulo_secao,
                 d.pagina,
                 1 - (d.embedding <=> query_embedding) as similarity
             from public.{self.table_name} d
             where 1 - (d.embedding <=> query_embedding) > match_threshold
             order by similarity desc
-            limit match_count;
+            limit match_count
+            offset offset_value;
         end;
         $$;
 
         -- Add permissions for the function
-        grant execute on function public.match_documents(vector(384), float, int) to anon, authenticated, service_role;
+        grant execute on function public.match_documents(vector(384), float, int, int) to anon, authenticated, service_role;
         """
         
         try:

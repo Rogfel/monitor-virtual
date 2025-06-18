@@ -8,14 +8,15 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-def search(queries=None, top_k=10):
+def search(queries=None, top_k=os.getenv("MATCH_COUNT"),
+           match_threshold=os.getenv("MATCH_THRESHOLD")):
     """
     Perform searches using the SupabaseRAG client.
     
     Args:
         queries (list or str): Search queries. If None, default queries will be used.
         top_k (int): Number of top results to return for each query.
-        
+        match_threshold (float): Minimum similarity score for a match.
     Returns:
         dict: Dictionary containing search results.
     """
@@ -55,7 +56,7 @@ def search(queries=None, top_k=10):
     for query in queries:
         try:
             print(f"\nSearch query: '{query}'")
-            results = rag.search_documents(query, top_k=top_k)
+            results = rag.search_documents(query)
             
             query_results = {
                 "query": query,

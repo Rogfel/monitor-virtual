@@ -135,7 +135,7 @@ rag.insert_document("Document Title", "Document text content...")
 4. Search for relevant documents:
 
 ```python
-results = rag.search_documents("Your search query", top_k=5)
+results = rag.search_documents("Your search query")
 ```
 
 ## Customization

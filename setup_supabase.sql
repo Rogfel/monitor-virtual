@@ -8,9 +8,10 @@ create table if not exists public.documents (
     titulo text,
     documento text,
     nome_documento text,
-    numero_chunk integer,
     pagina integer,
-    embedding vector(384)
+    embedding vector(384),
+    pdf_path text,
+    titulo_secao text
 );
 
 -- Create an index for faster vector searches if it doesn't exist
@@ -23,15 +24,17 @@ drop function if exists public.match_documents;
 create or replace function public.match_documents (
     query_embedding vector(384),
     match_threshold float,
-    match_count int
+    match_count int,
+    offset_value int
 )
 returns table (
     id bigint,
     titulo text,
     documento text,
     nome_documento text,
-    numero_chunk integer,
     pagina integer,
+    pdf_path text,
+    titulo_secao text,
     similarity float
 )
 language plpgsql
@@ -43,15 +46,17 @@ begin
         d.titulo,
         d.documento,
         d.nome_documento,
-        d.numero_chunk,
         d.pagina,
+        d.pdf_path,
+        d.titulo_secao,
         1 - (d.embedding <=> query_embedding) as similarity
     from public.documents d
     where 1 - (d.embedding <=> query_embedding) > match_threshold
     order by similarity desc
-    limit match_count;
+    limit match_count
+    offset offset_value;
 end;
 $$;
 
 -- Add permissions for the function
-grant execute on function public.match_documents(vector(384), float, int) to anon, authenticated, service_role; 
+grant execute on function public.match_documents(vector(384), float, int, int) to anon, authenticated, service_role; 

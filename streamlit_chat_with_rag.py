@@ -101,7 +101,7 @@ def generate_response(prompt):
     try:
         if st.session_state.rag_initialized:
             # Use the RAG system to search for relevant documents
-            results = st.session_state.rag_system.search_documents(prompt, top_k=3)
+            results = st.session_state.rag_system.search_documents(prompt)
             
             if results and len(results) > 0:
                 # Format the response with the retrieved information
