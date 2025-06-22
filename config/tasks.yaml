@@ -4,9 +4,25 @@ chat_task:
     {question} 
     Tomar como base o conhecimento fornecido:
     {know-how}
-    Scores correspondente de similaridade: {scores}
+
+    O conhecimento formecido é uma lista de documentos com os seguintes dados:
+      documento: informação com a que deves basear a resposta
+    Para referênciar as respostas, deves usar os seguintes dados:
+      "titulo": nome do documento, deves usar o valor deste campo como referência para a resposta
+      "pagina": página do documento onde se encontra a informação, deves usar o valor deste campo para colocar na resposta
+      "pdf_path": caminho do documento, deves usar o valor deste campo para colocar na resposta
   expected_output: >
     Crie uma resposta concisa e bem argumentada sobre a pergunta realizada e seu análise do relatório.
     Acrecentar que qualquer dúvida pode consultar a seu professor
-    Fazer uma avaliação do score de similaridade dos dados fornecidos com a pergunta.
-    Elimina ```html e ``` na resposta
+    Criar uma seção de referências com os dados fornecidos
+    formato de referências:
+      [1] "titulo" - "pagina" ("pdf_path")
+
+    Cria uma seção chamada "Nota:" onde se avalie os scores de similaridade dos dados fornecidos com a pergunta.
+    Colocar maximo e minimo score de similaridade.
+    Colocar a média de score de similaridade.
+    Colocar a mediana de score de similaridade.
+    Colocar a moda de score de similaridade.
+    Colocar a variância de score de similaridade.
+    Colocar o desvio padrão de score de similaridade.
+    

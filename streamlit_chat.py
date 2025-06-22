@@ -51,12 +51,13 @@ st.markdown("""
     right: 0.5rem;
     background: none;
     border: none;
-    color: #6c757d;
+    color: #000;
     cursor: pointer;
     font-size: 0.9rem;
     opacity: 0.6;
     transition: opacity 0.2s;
     padding: 0.2rem;
+    float: right;
 }
 .copy-button:hover {
     opacity: 1;
@@ -124,10 +125,13 @@ def display_messages():
         ''', unsafe_allow_html=True)
         # Resposta do assistente
         if assistant_msg:
+            # Escape the content for JavaScript
+            escaped_content = assistant_msg["content"].replace("\\", "\\\\").replace("`", "\\`").replace("'", "\\'").replace('"', '\\"').replace("\n", "\\n")
+            
             st.markdown(f'''
             <div class="chat-message assistant" style="background:#111; color:#fff; word-break:break-word;">
-                <button class="copy-button" onclick="navigator.clipboard.writeText(`{assistant_msg["content"].replace("`", "\\`").replace("'", "\\'")}`)">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="12" height="12" rx="2" stroke="white" stroke-width="1.5" fill="none"/><rect x="6" y="6" width="9" height="9" rx="2" fill="white" fill-opacity="0.1"/></svg>
+                <button class="copy-button" style="background:none; border:none; color:#fff; cursor:pointer; font-size:0.9rem; opacity:0.6; transition:opacity 0.2s; padding:0.2rem;" onclick="navigator.clipboard.writeText('{escaped_content}')">
+                    <svg width="18" height="18" style=" float:right;" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="12" height="12" rx="2" stroke="white" stroke-width="1.5" fill="none"/><rect x="6" y="6" width="9" height="9" rx="2" fill="white" fill-opacity="0.1"/></svg>
                 </button>
                 <div class="message">🤖 {assistant_msg["content"]}</div>
             </div>

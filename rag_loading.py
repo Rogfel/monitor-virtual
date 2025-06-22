@@ -1,5 +1,4 @@
 import os
-import glob
 import argparse
 from rag.supabase_rag import SupabaseRAG
 from rag.process_pdf_to_supabase import process_pdf_to_supabase
