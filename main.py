@@ -21,9 +21,14 @@ load_dotenv()
 
 # Config AI agent
 agent = CrewAgent()
+agent_focus = CrewAgent()
+
 agent.new_agent(agent_name='monitor_agent')
 agent.new_task('chat_task', agent=agent.agents_dict['monitor_agent'])
+# agent.new_task('focus_task', agent=agent.agents_dict['monitor_agent'])
 
+agent_focus.new_agent(agent_name='monitor_agent')
+agent_focus.new_task('focus_task', agent=agent_focus.agents_dict['monitor_agent'])
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -47,17 +52,19 @@ class QuestionRequest(BaseModel):
 
 @app.post("/api/v1/monitor", response_model=Dict)
 async def chat(QRequest: QuestionRequest):
-    response = search(queries=QRequest.question)
+    focus_task = agent_focus.crew().kickoff(inputs={"text": QRequest.question})
+    print(focus_task.raw)
+    response = search(queries=focus_task.raw)
 
-    documents = [doc['document'] for doc in response["results"][0]["matches"]]
-    scores = [doc['similarity'] for doc in response["results"][0]["matches"]]
+    documents = [doc for doc in response["results"][0]["matches"]]
+    # scores = [doc['similarity'] for doc in response["results"][0]["matches"]]
 
     if len(documents) == 0:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content=jsonable_encoder({"raw": "Não foi possível encontrar informações sobre a questão. Nesse caso, deve consultar a seu professor."}))
 
-    result = agent.crew().kickoff(inputs={"question": QRequest.question, "know-how": documents, "scores": scores})
+    result = agent.crew().kickoff(inputs={"question": QRequest.question, "know-how": documents})
     
     return JSONResponse(
             status_code=status.HTTP_200_OK,

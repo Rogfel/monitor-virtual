@@ -73,7 +73,9 @@ def search(queries=None, top_k=os.getenv("MATCH_COUNT"),
                     query_results["matches"].append({
                         "title": result['titulo'],
                         "similarity": result['similarity'],
-                        "document": result['documento']
+                        "document": result['documento'],
+                        "pdf_path": result['pdf_path'],
+                        "pagina": result['pagina']
                     })
             else:
                 print("No results found.")

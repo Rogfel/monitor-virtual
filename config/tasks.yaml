@@ -4,25 +4,35 @@ chat_task:
     {question} 
     Tomar como base o conhecimento fornecido:
     {know-how}
-
-    O conhecimento formecido é uma lista de documentos com os seguintes dados:
+    Essa base de conhecimento é uma lista de diccionarios onde cada registro tem os seguintes campos:
       documento: informação com a que deves basear a resposta
-    Para referênciar as respostas, deves usar os seguintes dados:
+      titulo: nome do documento, deves usar o valor deste campo como referência para a resposta
+      pagina: página do documento onde se encontra a informação, deves usar o valor deste campo para colocar na resposta
+      pdf_path: caminho do documento, deves usar o valor deste campo para colocar na resposta
+      similarity: score de similaridade do documento com a pergunta
+    Com as informaçôes dos documentos, deves criar as respostas para a pergunta.
+    Deve colocar as resferencias correspondetes a cada texto definido usando os campos:
       "titulo": nome do documento, deves usar o valor deste campo como referência para a resposta
       "pagina": página do documento onde se encontra a informação, deves usar o valor deste campo para colocar na resposta
       "pdf_path": caminho do documento, deves usar o valor deste campo para colocar na resposta
   expected_output: >
-    Crie uma resposta concisa e bem argumentada sobre a pergunta realizada e seu análise do relatório.
+    Resposta concisa e bem argumentada sobre a pergunta realizada e seu análise do relatório.
     Acrecentar que qualquer dúvida pode consultar a seu professor
-    Criar uma seção de referências com os dados fornecidos
+    Sessão de referências com os dados fornecidos
+    Colocar as referências com numeração consecutiva no documento
     formato de referências:
-      [1] "titulo" - "pagina" ("pdf_path")
+      ["numero"] "titulo" - "pagina"(pagina ou conjunto de paginas do documento) - "pdf_path"
 
-    Cria uma seção chamada "Nota:" onde se avalie os scores de similaridade dos dados fornecidos com a pergunta.
+    Sessão de Nota: onde se avalie os scores de similaridade (similarity) dos dados fornecidos com a pergunta.
     Colocar maximo e minimo score de similaridade.
     Colocar a média de score de similaridade.
     Colocar a mediana de score de similaridade.
-    Colocar a moda de score de similaridade.
-    Colocar a variância de score de similaridade.
-    Colocar o desvio padrão de score de similaridade.
-    
+  
+focus_task:
+  description: >
+    Como professor universitário da área de mecánica deves tirar as palabras claves da pergunta:
+    {text} 
+    Com o objetivo de fazer uma busca mais assertiva na literatura técnica.
+    Não adicionar palavras que não estejam presentes no texto.
+  expected_output: >
+    Lista de palabras claves
