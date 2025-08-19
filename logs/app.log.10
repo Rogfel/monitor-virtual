@@ -1,0 +1,109 @@
+2025-08-18 17:25:50,442 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 17:25:56,496 INFO: Successfully connected to the tools (agent) table [in /home/rogfel/projects/pixelbot/endpoint.py:213]
+2025-08-18 17:25:56,501 INFO: Starting Waitress production server on http://0.0.0.0:5000/... [in /home/rogfel/projects/pixelbot/endpoint.py:2573]
+2025-08-18 17:26:53,487 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 17:26:59,169 INFO: Successfully connected to the tools (agent) table [in /home/rogfel/projects/pixelbot/endpoint.py:213]
+2025-08-18 17:26:59,174 INFO: Starting Waitress production server on http://0.0.0.0:5000/... [in /home/rogfel/projects/pixelbot/endpoint.py:2573]
+2025-08-18 17:27:05,277 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 17:27:05,349 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 17:27:18,699 INFO: Processing query for user local_user with selected persona 'DEFAULT': que é stick-out? [in /home/rogfel/projects/pixelbot/endpoint.py:485]
+2025-08-18 17:27:18,700 INFO: No persona selected, using default agent settings. [in /home/rogfel/projects/pixelbot/endpoint.py:522]
+2025-08-18 17:27:33,920 INFO: Inserted user prompt and assistant answer into chat history for user local_user. [in /home/rogfel/projects/pixelbot/endpoint.py:649]
+2025-08-18 17:27:33,920 INFO: Query processed successfully, answer length: 365 [in /home/rogfel/projects/pixelbot/endpoint.py:673]
+2025-08-18 17:29:18,668 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 17:29:18,698 INFO: 404 Not Found: /favicon.ico [in /home/rogfel/projects/pixelbot/endpoint.py:2336]
+2025-08-18 17:33:54,868 INFO: Attempting to delete all documents for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1396]
+2025-08-18 17:33:54,885 INFO: Deleted 40 document items from agents.collection table for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1402]
+2025-08-18 17:33:54,908 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 17:33:54,942 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 17:34:34,591 ERROR: Pixeltable error during file upload 'Especilizacao_em_Soldagem_-_UFMG_Video_unidade_11_2_Soldagem_por_resistencia_eletrica_por_costura_RSW_9BRsPuAGwzQ.mp4': Failed to load spaCy model: en_core_web_sm [in /home/rogfel/projects/pixelbot/endpoint.py:767]
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/env.py", line 763, in __init_spacy
+    self._spacy_nlp = spacy.load(spacy_model)
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/spacy/__init__.py", line 52, in load
+    name,
+       ^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/spacy/util.py", line 477, in load_model
+    *,
+       
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/spacy/util.py", line 513, in load_model_from_package
+    ) -> "Language":
+               ^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/en_core_web_sm/__init__.py", line 10, in load
+    return load_model_from_init_py(__file__, **overrides)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/spacy/util.py", line 694, in load_model_from_init_py
+    path: Union[str, Path],
+           ^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/spacy/util.py", line 551, in load_model_from_path
+    config: Union[Dict[str, Any], Config],
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/spacy/util.py", line 599, in load_model_from_config
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/spacy/language.py", line 1859, in from_config
+    meta=meta,
+      ^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/spacy/language.py", line 186, in __init__
+    # points. The factory decorator applied to these functions takes care
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'spacy.pipeline.factories'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/endpoint.py", line 751, in upload_file
+    table.insert(
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/insertable_table.py", line 160, in insert
+    return table.insert_table_data_source(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/insertable_table.py", line 178, in insert_table_data_source
+    status += self._tbl_version.get().insert(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 834, in insert
+    return self._insert(plan, time.time(), print_stats=print_stats, rowids=rowids(), abort_on_exc=fail_on_exception)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 863, in _insert
+    status = view.get()._insert(plan, timestamp, print_stats=print_stats)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 863, in _insert
+    status = view.get()._insert(plan, timestamp, print_stats=print_stats)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 849, in _insert
+    num_rows, num_excs, cols_with_excs = self.store_tbl.insert_rows(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/store.py", line 337, in insert_rows
+    for row_batch in exec_plan:
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/exec_node.py", line 83, in __iter__
+    batch: DataRowBatch = loop.run_until_complete(aiter.__anext__())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/expr_eval/expr_eval_node.py", line 289, in __aiter__
+    raise self.error
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/expr_eval/expr_eval_node.py", line 118, in _fetch_input_batch
+    batch = await self.input_iter.__anext__()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/component_iteration_node.py", line 53, in __aiter__
+    iterator = self.view.get().iterator_cls(**iterator_args)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/iterators/string.py", line 14, in __init__
+    self.doc = Env.get().spacy_nlp(self._text)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/env.py", line 738, in spacy_nlp
+    self.__init_spacy()
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/env.py", line 765, in __init_spacy
+    raise excs.Error(f'Failed to load spaCy model: {spacy_model}') from exc
+pixeltable.exceptions.Error: Failed to load spaCy model: en_core_web_sm
+2025-08-18 17:34:34,633 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 17:34:34,671 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 17:38:03,052 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 17:38:03,145 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 17:38:04,587 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 17:38:04,676 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 17:38:37,246 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 17:38:37,249 WARNING: First frame not found in map for video: Especilizacao_em_Soldagem_-_UFMG_Video_unidade_11_2_Soldagem_por_resistencia_eletrica_por_costura_RSW_9BRsPuAGwzQ.mp4 (UUID: 573c54f3-1d03-47a8-bc3b-801afb6bc272) [in /home/rogfel/projects/pixelbot/endpoint.py:1238]
+2025-08-18 17:38:37,333 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 17:38:41,900 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 17:38:41,902 WARNING: First frame not found in map for video: Especilizacao_em_Soldagem_-_UFMG_Video_unidade_11_2_Soldagem_por_resistencia_eletrica_por_costura_RSW_9BRsPuAGwzQ.mp4 (UUID: 573c54f3-1d03-47a8-bc3b-801afb6bc272) [in /home/rogfel/projects/pixelbot/endpoint.py:1238]
+2025-08-18 17:38:41,980 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]

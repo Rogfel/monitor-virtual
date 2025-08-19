@@ -1,0 +1,96 @@
+2025-08-18 22:00:00,174 ERROR: FATAL: Could not connect to primary database table 'agents.tools': Table record not found: f463e29d-f46c-4515-8b16-53c35761b4b3:None [in /home/rogfel/projects/pixelbot/endpoint.py:215]
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/endpoint.py", line 208, in <module>
+    tool_agent = pxt.get_table("agents.tools")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/globals.py", line 401, in get_table
+    return Catalog.get().get_table(path_obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 73, in loop
+    return op(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 587, in get_table
+    obj._tbl_version.get().ensure_md_loaded()
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 449, in ensure_md_loaded
+    _ = col.value_expr
+        ^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/column.py", line 134, in value_expr
+    self._value_expr = exprs.Expr.from_dict(self.value_expr_dict)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/expr.py", line 528, in from_dict
+    return type_class._from_dict(d, components)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/function_call.py", line 428, in _from_dict
+    fn = func.Function.from_dict(d['fn'])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/func/function.py", line 469, in from_dict
+    return func_class._from_dict(d)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/func/query_template_function.py", line 95, in _from_dict
+    return cls(DataFrame.from_dict(d['df']), Signature.from_dict(d['signature']), name=d['name'])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/dataframe.py", line 1024, in from_dict
+    [(exprs.Expr.from_dict(e), name) for e, name in d['select_list']]
+      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/expr.py", line 528, in from_dict
+    return type_class._from_dict(d, components)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/column_ref.py", line 283, in _from_dict
+    col = cls.get_column(d)
+          ^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/column_ref.py", line 276, in get_column
+    tbl_version = catalog.Catalog.get().get_tbl_version(tbl_id, version)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 727, in get_tbl_version
+    self._tbl_versions[tbl_id, effective_version] = self._load_tbl_version(tbl_id, effective_version)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 979, in _load_tbl_version
+    tbl_md, _, schema_version_md = self.load_tbl_md(tbl_id, effective_version)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 891, in load_tbl_md
+    assert row is not None, f'Table record not found: {tbl_id}:{effective_version}'
+           ^^^^^^^^^^^^^^^
+AssertionError: Table record not found: f463e29d-f46c-4515-8b16-53c35761b4b3:None
+2025-08-18 22:03:15,548 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 22:03:21,111 INFO: Successfully connected to the tools (agent) table [in /home/rogfel/projects/pixelbot/endpoint.py:213]
+2025-08-18 22:03:21,116 INFO: Starting Waitress production server on http://0.0.0.0:5000/... [in /home/rogfel/projects/pixelbot/endpoint.py:2573]
+2025-08-18 22:06:07,662 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:06:07,764 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:06:09,167 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:06:09,255 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:13:33,802 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:13:33,895 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:13:37,168 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:13:37,261 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:15:07,742 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:15:07,842 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:34:03,874 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:34:03,968 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:34:05,206 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:34:05,292 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:34:06,977 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:34:07,058 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:34:08,869 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:34:08,949 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:34:09,878 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:34:09,971 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:56:21,610 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 22:56:27,781 INFO: Successfully connected to the tools (agent) table [in /home/rogfel/projects/pixelbot/endpoint.py:213]
+2025-08-18 22:56:27,786 INFO: Starting Waitress production server on http://0.0.0.0:5000/... [in /home/rogfel/projects/pixelbot/endpoint.py:2573]
+2025-08-18 22:56:46,122 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 22:56:51,631 INFO: Successfully connected to the tools (agent) table [in /home/rogfel/projects/pixelbot/endpoint.py:213]
+2025-08-18 22:56:51,635 INFO: Starting Waitress production server on http://0.0.0.0:5000/... [in /home/rogfel/projects/pixelbot/endpoint.py:2573]
+2025-08-18 22:58:26,408 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:58:26,498 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 22:59:27,809 INFO: File 'GUIA_-_Processos_de_Uniao_1.pdf' (UUID: 64d24829-8ed9-4be6-bb25-23ac15332c2e) uploaded and added to 'agents.collection' table for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:755]
+2025-08-18 22:59:27,960 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 22:59:27,994 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 23:02:05,651 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 23:02:05,694 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 23:02:16,547 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 23:02:16,632 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 23:04:02,302 INFO: File 'VIDEO_19_-_MAGNETICALLY_IMPELLED_ARC_BUTT_WELDING_MIAB.mp4' (UUID: 91508922-1564-47d4-b482-c0f2bc2f3a62) uploaded and added to 'agents.videos' table for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:755]
+2025-08-18 23:04:02,330 INFO: Successfully fetched and mapped 1 first frames by UUID. [in /home/rogfel/projects/pixelbot/endpoint.py:1172]
+2025-08-18 23:04:02,366 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 23:04:18,608 INFO: Processing query for user local_user with selected persona 'DEFAULT': Que é but welding? [in /home/rogfel/projects/pixelbot/endpoint.py:485]
+2025-08-18 23:04:18,609 INFO: No persona selected, using default agent settings. [in /home/rogfel/projects/pixelbot/endpoint.py:522]

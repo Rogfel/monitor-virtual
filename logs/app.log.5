@@ -1,0 +1,102 @@
+2025-08-18 19:01:26,085 ERROR: Error processing query 'que é stick-out?...': (search_documents(prompt, user_id), 'expression search_documents(prompt, user_id)', Error("Error during SQL execution:\n(psycopg.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block\n[SQL: SELECT view_4d2cac8bc0564bc8a40d52f88ac8e984.col_1, tbl_a9827862afdc4a5ba04d1055b7c73630.col_0, (view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_1)s) * %(param_1)s::INTEGER + %(param_2)s::INTEGER AS anon_1, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_2, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_3, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_4, view_4d2cac8bc0564bc8a40d52f88ac8e984.rowid, view_4d2cac8bc0564bc8a40d52f88ac8e984.pos_0, view_4d2cac8bc0564bc8a40d52f88ac8e984.v_min \nFROM tbl_a9827862afdc4a5ba04d1055b7c73630 JOIN view_4d2cac8bc0564bc8a40d52f88ac8e984 ON tbl_a9827862afdc4a5ba04d1055b7c73630.rowid = view_4d2cac8bc0564bc8a40d52f88ac8e984.rowid \nWHERE tbl_a9827862afdc4a5ba04d1055b7c73630.col_3 = %(param_3)s::VARCHAR AND (view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_1)s) * %(param_1)s::INTEGER + %(param_2)s::INTEGER > %(param_4)s AND tbl_a9827862afdc4a5ba04d1055b7c73630.v_min <= %(v_min_1)s::BIGINT AND tbl_a9827862afdc4a5ba04d1055b7c73630.v_max > %(v_max_1)s::BIGINT AND view_4d2cac8bc0564bc8a40d52f88ac8e984.v_min <= %(v_min_2)s::BIGINT AND view_4d2cac8bc0564bc8a40d52f88ac8e984.v_max > %(v_max_2)s::BIGINT ORDER BY view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_2)s]\n[parameters: {'col_11_1': '[0.042480312287807465,0.053411904722452164,-0.04742787405848503,0.040073294192552567,-0.051104508340358734,0.07174661755561829,0.10354804247617722,0. ... (7734 characters truncated) ... 4883,0.06806875020265579,-0.0255790576338768,-0.015420831739902496,-0.012175188399851322,0.0668686255812645,0.022701691836118698,0.04882902279496193]', 'param_1': -1, 'param_2': 1, 'param_3': 'local_user', 'param_4': 0.5, 'v_min_1': 95, 'v_max_1': 95, 'v_min_2': 1, 'v_max_2': 1, 'col_11_2': '[0.042480312287807465,0.053411904722452164,-0.04742787405848503,0.040073294192552567,-0.051104508340358734,0.07174661755561829,0.10354804247617722,0. ... (7734 characters truncated) ... 4883,0.06806875020265579,-0.0255790576338768,-0.015420831739902496,-0.012175188399851322,0.0668686255812645,0.022701691836118698,0.04882902279496193]'}]\n(Background on this error at: https://sqlalche.me/e/20/2j85)"), <traceback object at 0x77046c7b4840>, ['que é stick-out?', 'local_user'], 0) [in /home/rogfel/projects/pixelbot/endpoint.py:685]
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/psycopg/cursor.py", line 97, in execute
+    raise ex.with_traceback(None)
+psycopg.errors.InFailedSqlTransaction: current transaction is aborted, commands ignored until end of transaction block
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/dataframe.py", line 444, in _acollect
+    result = [[row[e.slot_idx] for e in self._select_list_exprs] async for row in self._aexec()]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/dataframe.py", line 269, in _aexec
+    async for row_batch in plan:
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/cache_prefetch_node.py", line 85, in __aiter__
+    await self.__submit_input_batch(input_iter, executor)
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/cache_prefetch_node.py", line 170, in __submit_input_batch
+    input_batch = await input.__anext__()
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/sql_node.py", line 291, in __aiter__
+    result_cursor = conn.execute(stmt)
+                    ^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/psycopg/cursor.py", line 97, in execute
+    raise ex.with_traceback(None)
+sqlalchemy.exc.InternalError: (psycopg.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+[SQL: SELECT view_4d2cac8bc0564bc8a40d52f88ac8e984.col_1, tbl_a9827862afdc4a5ba04d1055b7c73630.col_0, (view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_1)s) * %(param_1)s::INTEGER + %(param_2)s::INTEGER AS anon_1, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_2, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_3, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_4, view_4d2cac8bc0564bc8a40d52f88ac8e984.rowid, view_4d2cac8bc0564bc8a40d52f88ac8e984.pos_0, view_4d2cac8bc0564bc8a40d52f88ac8e984.v_min 
+FROM tbl_a9827862afdc4a5ba04d1055b7c73630 JOIN view_4d2cac8bc0564bc8a40d52f88ac8e984 ON tbl_a9827862afdc4a5ba04d1055b7c73630.rowid = view_4d2cac8bc0564bc8a40d52f88ac8e984.rowid 
+WHERE tbl_a9827862afdc4a5ba04d1055b7c73630.col_3 = %(param_3)s::VARCHAR AND (view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_1)s) * %(param_1)s::INTEGER + %(param_2)s::INTEGER > %(param_4)s AND tbl_a9827862afdc4a5ba04d1055b7c73630.v_min <= %(v_min_1)s::BIGINT AND tbl_a9827862afdc4a5ba04d1055b7c73630.v_max > %(v_max_1)s::BIGINT AND view_4d2cac8bc0564bc8a40d52f88ac8e984.v_min <= %(v_min_2)s::BIGINT AND view_4d2cac8bc0564bc8a40d52f88ac8e984.v_max > %(v_max_2)s::BIGINT ORDER BY view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_2)s]
+[parameters: {'col_11_1': '[0.042480312287807465,0.053411904722452164,-0.04742787405848503,0.040073294192552567,-0.051104508340358734,0.07174661755561829,0.10354804247617722,0. ... (7734 characters truncated) ... 4883,0.06806875020265579,-0.0255790576338768,-0.015420831739902496,-0.012175188399851322,0.0668686255812645,0.022701691836118698,0.04882902279496193]', 'param_1': -1, 'param_2': 1, 'param_3': 'local_user', 'param_4': 0.5, 'v_min_1': 95, 'v_max_1': 95, 'v_min_2': 1, 'v_max_2': 1, 'col_11_2': '[0.042480312287807465,0.053411904722452164,-0.04742787405848503,0.040073294192552567,-0.051104508340358734,0.07174661755561829,0.10354804247617722,0. ... (7734 characters truncated) ... 4883,0.06806875020265579,-0.0255790576338768,-0.015420831739902496,-0.012175188399851322,0.0668686255812645,0.022701691836118698,0.04882902279496193]'}]
+(Background on this error at: https://sqlalche.me/e/20/2j85)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/expr_eval/evaluators.py", line 206, in eval_async
+    call_args.row[self.fn_call.slot_idx] = await self.fn.aexec(*call_args.args, **call_args.kwargs)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/func/query_template_function.py", line 74, in aexec
+    result = await bound_df._acollect()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/dataframe.py", line 449, in _acollect
+    raise excs.Error(f'Error during SQL execution:\n{e}') from e
+pixeltable.exceptions.Error: Error during SQL execution:
+(psycopg.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block
+[SQL: SELECT view_4d2cac8bc0564bc8a40d52f88ac8e984.col_1, tbl_a9827862afdc4a5ba04d1055b7c73630.col_0, (view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_1)s) * %(param_1)s::INTEGER + %(param_2)s::INTEGER AS anon_1, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_2, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_3, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_4, view_4d2cac8bc0564bc8a40d52f88ac8e984.rowid, view_4d2cac8bc0564bc8a40d52f88ac8e984.pos_0, view_4d2cac8bc0564bc8a40d52f88ac8e984.v_min 
+FROM tbl_a9827862afdc4a5ba04d1055b7c73630 JOIN view_4d2cac8bc0564bc8a40d52f88ac8e984 ON tbl_a9827862afdc4a5ba04d1055b7c73630.rowid = view_4d2cac8bc0564bc8a40d52f88ac8e984.rowid 
+WHERE tbl_a9827862afdc4a5ba04d1055b7c73630.col_3 = %(param_3)s::VARCHAR AND (view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_1)s) * %(param_1)s::INTEGER + %(param_2)s::INTEGER > %(param_4)s AND tbl_a9827862afdc4a5ba04d1055b7c73630.v_min <= %(v_min_1)s::BIGINT AND tbl_a9827862afdc4a5ba04d1055b7c73630.v_max > %(v_max_1)s::BIGINT AND view_4d2cac8bc0564bc8a40d52f88ac8e984.v_min <= %(v_min_2)s::BIGINT AND view_4d2cac8bc0564bc8a40d52f88ac8e984.v_max > %(v_max_2)s::BIGINT ORDER BY view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_2)s]
+[parameters: {'col_11_1': '[0.042480312287807465,0.053411904722452164,-0.04742787405848503,0.040073294192552567,-0.051104508340358734,0.07174661755561829,0.10354804247617722,0. ... (7734 characters truncated) ... 4883,0.06806875020265579,-0.0255790576338768,-0.015420831739902496,-0.012175188399851322,0.0668686255812645,0.022701691836118698,0.04882902279496193]', 'param_1': -1, 'param_2': 1, 'param_3': 'local_user', 'param_4': 0.5, 'v_min_1': 95, 'v_max_1': 95, 'v_min_2': 1, 'v_max_2': 1, 'col_11_2': '[0.042480312287807465,0.053411904722452164,-0.04742787405848503,0.040073294192552567,-0.051104508340358734,0.07174661755561829,0.10354804247617722,0. ... (7734 characters truncated) ... 4883,0.06806875020265579,-0.0255790576338768,-0.015420831739902496,-0.012175188399851322,0.0668686255812645,0.022701691836118698,0.04882902279496193]'}]
+(Background on this error at: https://sqlalche.me/e/20/2j85)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/endpoint.py", line 529, in query
+    tool_agent.insert(
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/insertable_table.py", line 160, in insert
+    return table.insert_table_data_source(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/insertable_table.py", line 178, in insert_table_data_source
+    status += self._tbl_version.get().insert(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 834, in insert
+    return self._insert(plan, time.time(), print_stats=print_stats, rowids=rowids(), abort_on_exc=fail_on_exception)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 849, in _insert
+    num_rows, num_excs, cols_with_excs = self.store_tbl.insert_rows(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/store.py", line 337, in insert_rows
+    for row_batch in exec_plan:
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/exec_node.py", line 83, in __iter__
+    batch: DataRowBatch = loop.run_until_complete(aiter.__anext__())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exec/expr_eval/expr_eval_node.py", line 287, in __aiter__
+    raise self.error from self.error.exc
+pixeltable.exceptions.ExprEvalError: (search_documents(prompt, user_id), 'expression search_documents(prompt, user_id)', Error("Error during SQL execution:\n(psycopg.errors.InFailedSqlTransaction) current transaction is aborted, commands ignored until end of transaction block\n[SQL: SELECT view_4d2cac8bc0564bc8a40d52f88ac8e984.col_1, tbl_a9827862afdc4a5ba04d1055b7c73630.col_0, (view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_1)s) * %(param_1)s::INTEGER + %(param_2)s::INTEGER AS anon_1, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_2, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_3, view_4d2cac8bc0564bc8a40d52f88ac8e984.col_4, view_4d2cac8bc0564bc8a40d52f88ac8e984.rowid, view_4d2cac8bc0564bc8a40d52f88ac8e984.pos_0, view_4d2cac8bc0564bc8a40d52f88ac8e984.v_min \nFROM tbl_a9827862afdc4a5ba04d1055b7c73630 JOIN view_4d2cac8bc0564bc8a40d52f88ac8e984 ON tbl_a9827862afdc4a5ba04d1055b7c73630.rowid = view_4d2cac8bc0564bc8a40d52f88ac8e984.rowid \nWHERE tbl_a9827862afdc4a5ba04d1055b7c73630.col_3 = %(param_3)s::VARCHAR AND (view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_1)s) * %(param_1)s::INTEGER + %(param_2)s::INTEGER > %(param_4)s AND tbl_a9827862afdc4a5ba04d1055b7c73630.v_min <= %(v_min_1)s::BIGINT AND tbl_a9827862afdc4a5ba04d1055b7c73630.v_max > %(v_max_1)s::BIGINT AND view_4d2cac8bc0564bc8a40d52f88ac8e984.v_min <= %(v_min_2)s::BIGINT AND view_4d2cac8bc0564bc8a40d52f88ac8e984.v_max > %(v_max_2)s::BIGINT ORDER BY view_4d2cac8bc0564bc8a40d52f88ac8e984.col_11 <=> %(col_11_2)s]\n[parameters: {'col_11_1': '[0.042480312287807465,0.053411904722452164,-0.04742787405848503,0.040073294192552567,-0.051104508340358734,0.07174661755561829,0.10354804247617722,0. ... (7734 characters truncated) ... 4883,0.06806875020265579,-0.0255790576338768,-0.015420831739902496,-0.012175188399851322,0.0668686255812645,0.022701691836118698,0.04882902279496193]', 'param_1': -1, 'param_2': 1, 'param_3': 'local_user', 'param_4': 0.5, 'v_min_1': 95, 'v_max_1': 95, 'v_min_2': 1, 'v_max_2': 1, 'col_11_2': '[0.042480312287807465,0.053411904722452164,-0.04742787405848503,0.040073294192552567,-0.051104508340358734,0.07174661755561829,0.10354804247617722,0. ... (7734 characters truncated) ... 4883,0.06806875020265579,-0.0255790576338768,-0.015420831739902496,-0.012175188399851322,0.0668686255812645,0.022701691836118698,0.04882902279496193]'}]\n(Background on this error at: https://sqlalche.me/e/20/2j85)"), <traceback object at 0x77046c7b4840>, ['que é stick-out?', 'local_user'], 0)

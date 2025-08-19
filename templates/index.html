@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+
+    <title>Monitor Virtual</title>
+    <!-- <link rel="canonical" href="https://agent.pixeltable.com/" /> -->
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Monitor Virtual",
+      "applicationCategory": "Artificial Intelligence",
+      "operatingSystem": "Web"
+    }
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="icon" type="image/png" href="/static/image/pixelbot.png">
+    <link rel="apple-touch-icon" href="/static/image/pixelbot.png">
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <meta name="application-name" content="Pixeltable Agent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Pixeltable Agent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Load External Libraries First -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+    <!-- Load Application Logic -->
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+
+    <!-- Initialize Mermaid -->
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "default",
+            logLevel: 3,
+            securityLevel: "loose",
+            sequence: {
+                actorMargin: 50
+            }
+        });
+    </script>
+</head>
+
+<body class="font-sans min-h-screen" data-is-authenticated="{{ is_authenticated|lower }}">
+    <header class="container px-4 py-4">
+        <div class="text-center mb-4 relative">
+            <!-- <a href="https://pixeltable.com" target="_blank" rel="noopener" title="Visit Pixeltable.com"
+                class="inline-block">
+                <img src="/static/image/pixeltable-logo.png" alt="Pixeltable Logo" class="h-10 mx-auto mb-2">
+            </a> -->
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Monitor Virtual</h1>
+            <!-- <p class="text-gray-600 text-lg">Your infinite memory personalized agent to answer questions based on
+                    all your interactions, files (docs, images, videos, audio) and available tools</p> -->
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Main Content Grid -->
+        <div class="main-grid relative">
+            <!-- Content Area -->
+            <article class="content-area bg-white rounded-lg shadow-sm">
+                <nav class="nav-tabs" aria-label="Main navigation">
+                    <ul class="flex flex-wrap" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="query-tab" data-tabs-target="#query-panel" type="button"
+                                role="tab" aria-controls="query-panel" aria-selected="true">
+                                <i class="fas fa-comment-dots mr-2"></i>Interface de Chat
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="chat-history-tab" data-tabs-target="#chat-history-panel"
+                                type="button" role="tab" aria-controls="chat-history-panel" aria-selected="false">
+                                <i class="fas fa-history mr-2"></i>Histórico de Chat
+                            </button>
+                        </li>
+                        <!-- <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="image-history-tab" data-tabs-target="#image-history-panel"
+                                type="button" role="tab" aria-controls="image-history-panel" aria-selected="false">
+                                <i class="fas fa-images mr-2"></i>Generated Images
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="memory-tab" data-tabs-target="#memory-panel" type="button"
+                                role="tab" aria-controls="memory-panel" aria-selected="false">
+                                <i class="fas fa-brain mr-2"></i>Memory Bank
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="how-it-works-tab" data-tabs-target="#how-it-works-panel"
+                                type="button" role="tab" aria-controls="how-it-works-panel" aria-selected="false">
+                                <i class="fas fa-info-circle mr-2"></i>How it Works
+                            </button>
+                        </li> -->
+                    </ul>
+                </nav>
+
+                <!-- Tab Content Panels -->
+                <div id="main-tab-content" class="px-4 pb-4">
+                    <!-- Query & Results Panel -->
+                    <div id="query-panel" role="tabpanel" aria-labelledby="query-tab">
+                        <!-- Query Form Section -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+
+                            <form id="query-form" class="space-y-4">
+                                <div class="relative">
+                                    <textarea id="query" name="query" rows="2"
+                                        class="w-full px-4 py-3 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition text-base resize-none overflow-y-hidden"
+                                        placeholder="Digite sua pergunta aqui..."></textarea>
+
+                                    <!-- NEW Container for Toggle and Submit Button -->
+                                    <div class="absolute bottom-3 right-3 flex items-center space-x-2">
+                                        <!-- Moved Toggle Switch Elements -->
+                                        <!-- <span id="chat-mode-label" class="text-xs font-medium text-gray-700">Chat</span>
+                                        <label for="mode-toggle"
+                                            class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" value="" id="mode-toggle" class="sr-only peer">
+                                            <div
+                                                class="mode-toggle-bg w-9 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gray-700">
+                                            </div>
+                                        </label>
+                                        <span id="image-mode-label"
+                                            class="text-xs font-medium text-gray-500">Image</span> -->
+
+                                        <!-- Moved Submit Button with tooltip container -->
+                                        <span class="tooltip-container">
+                                            <button type="submit" id="submit-button"
+                                                class="btn-submit bg-gray-700 text-white rounded-lg text-lg font-medium focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 shadow-sm flex items-center justify-center hover:bg-gray-800 transition-colors w-10 h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                disabled>
+                                                <span id="button-text"><i class="fas fa-paper-plane fa-sm"></i></span>
+                                                <div id="button-loading" class="hidden">
+                                                    <i class="fas fa-spinner fa-spin"></i>
+                                                </div>
+                                            </button>
+                                            <span class="custom-tooltip">Enviar Pergunta / Gerar Imagem</span>
+                                        </span>
+                                    </div>
+                                    <!-- END NEW Container -->
+
+                                    <!-- Tools Dropdown Button with positioned tooltip container -->
+                                    <!-- <span class="tooltip-container"
+                                        style="position: absolute; bottom: 0.75rem; left: 0.75rem;">
+                                        <button type="button" id="tools-dropdown-button"
+                                            class="bg-gray-200 text-gray-600 rounded-lg text-lg font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 shadow-sm flex items-center justify-center hover:bg-gray-300 transition-colors w-10 h-10">
+                                            <i class="fas fa-wrench fa-sm"></i>
+                                        </button>
+                                        <span class="custom-tooltip">Ver Ferramentas Disponíveis</span>
+                                    </span> -->
+
+                                    <!-- Tools Dropdown Content (position relative to textarea parent) -->
+                                    <div id="tools-dropdown-content"
+                                        class="hidden absolute bottom-14 left-3 mb-1 w-64 md:w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+                                        <!-- Tool items will be populated here by JS -->
+                                        <div class="p-3 text-center text-sm text-gray-500">Carregando ferramentas...
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- NEW: Loading State Area (Replaces Tip Area) -->
+                        <div id="loading-state-area" class="hidden px-6 py-6 text-center mb-6">
+                            <div class="inline-block px-6 py-4 rounded-lg">
+                                <div class="flex flex-col justify-center items-center space-y-3">
+                                    <!-- Pixel Animation Container -->
+                                    <div id="pixel-loader" class="pixel-loader"></div>
+                                    {# Text color already gray-700 #}
+                                    <p class="text-sm font-medium text-gray-700"><span
+                                            id="loading-state-text">Processando...</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Results Section -->
+                        <div id="results" class="space-y-6">
+                            <!-- Suggestion Cards Container (visible initially) -->
+                            <div id="suggestion-cards-container" class="text-center py-6 px-4"> {# Restored text-center
+                                #}
+                                <!-- Pixeltable Explanation -->
+                                <div class="mb-8 mx-auto">
+                                    <p class="text-base text-gray-600 mb-3">
+                                        Bem-vind@s! Esta é uma IA personalizada que combina técnicas de conversa e
+                                        pesquisa de dados para fornecer respostas precisas e informativas.
+                                    </p>
+                                    <!-- <p class="text-sm text-gray-500">
+                                        Clique no botão <button type="button"
+                                            class="text-gray-600 hover:text-gray-800 hover:underline font-medium"
+                                            onclick="document.getElementById('how-it-works-tab').click();">Como
+                                            funciona</button> para saber mais, ou comece com uma sugestão abaixo!
+                                    </p> -->
+                                </div>
+                                <!-- Suggestion Cards -->
+                                <!-- <div class="flex flex-wrap justify-center gap-4 mt-4">
+                                    <div class="suggestion-card" data-query="What's up with Robinhood?">
+                                        <i class="fas fa-image"></i>
+                                        <span>What's up with Robinhood?</span>
+                                    </div>
+                                    <div class="suggestion-card"
+                                        data-query="Summarize recent news about advancements in quantum computing.">
+                                        <i class="fas fa-search"></i>
+                                        <span>Summarize quantum computing news</span>
+                                    </div>
+                                    <div class="suggestion-card" data-query="How to get started with Pixeltable?">
+                                        <i class="fas fa-brain"></i>
+                                        <span>How to get started with Pixeltable?</span>
+                                    </div>
+                                </div> -->
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Prompts Panel (Now Agent Config) -->
+                    <div id="prompts-panel" class="hidden" role="tabpanel" aria-labelledby="prompts-tab">
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-robot mr-2 text-gray-500"></i>
+                                Configurações do Agente
+                            </h2>
+                            <p class="text-xs text-gray-500 mb-4">Visualize e modifique prompts do sistema e parâmetros
+                                do LLM.
+                                As alterações se aplicam às consultas subsequentes.</p>
+
+                            <form id="prompts-form" class="space-y-6">
+
+                                <!-- System Prompts -->
+                                <fieldset class="space-y-4">
+                                    <legend class="text-base font-medium text-gray-700 mb-2">Prompts do Sistema</legend>
+                                    <div>
+                                        <label for="initial-prompt-input"
+                                            class="text-sm font-medium text-gray-600 mb-1 block">Prompt Inicial (Seleção
+                                            de
+                                            Ferramentas):</label>
+                                        <div class="relative">
+                                            <textarea id="initial-prompt-input" name="initial_prompt" rows="6"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent text-sm"
+                                                placeholder="Carregando prompt inicial..."></textarea>
+                                            <div id="initial-prompt-loading"
+                                                class="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-75 rounded-lg">
+                                                <div
+                                                    class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="final-prompt-input"
+                                            class="text-sm font-medium text-gray-600 mb-1 block">Prompt Final (Geração
+                                            de
+                                            Relatório):</label>
+                                        <div class="relative">
+                                            <textarea id="final-prompt-input" name="final_prompt" rows="6"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-transparent text-sm"
+                                                placeholder="Carregando prompt final..."></textarea>
+                                            <div id="final-prompt-loading"
+                                                class="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-75 rounded-lg">
+                                                <div
+                                                    class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <!-- LLM Parameters -->
+                                <fieldset class="space-y-4 pt-4 border-t border-gray-200">
+                                    <legend class="text-base font-medium text-gray-700 mb-2">Parâmetros do LLM</legend>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                        <div>
+                                            <label for="param-max_tokens"
+                                                class="text-sm font-medium text-gray-600 mb-1 block">Máximo de
+                                                Tokens:</label>
+                                            <input type="number" id="param-max_tokens" name="max_tokens" min="1"
+                                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                                placeholder="ex: 1024">
+                                        </div>
+                                        <div>
+                                            <label for="param-temperature"
+                                                class="text-sm font-medium text-gray-600 mb-1 block">Temperatura:</label>
+                                            <input type="number" id="param-temperature" name="temperature" min="0"
+                                                max="2" step="0.1"
+                                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                                placeholder="ex: 0.7 (0-2)">
+                                        </div>
+                                        <div>
+                                            <label for="param-top_k"
+                                                class="text-sm font-medium text-gray-600 mb-1 block">Top K:</label>
+                                            <input type="number" id="param-top_k" name="top_k" min="1"
+                                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                                placeholder="Deixe em branco para o padrão">
+                                        </div>
+                                        <div>
+                                            <label for="param-top_p"
+                                                class="text-sm font-medium text-gray-600 mb-1 block">Top P:</label>
+                                            <input type="number" id="param-top_p" name="top_p" min="0" max="1"
+                                                step="0.01"
+                                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                                placeholder="ex: 0.9 (0-1)">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label for="param-stop_sequences"
+                                                class="text-sm font-medium text-gray-600 mb-1 block">Sequências de
+                                                Parada
+                                                (separadas por vírgula):</label>
+                                            <input type="text" id="param-stop_sequences" name="stop_sequences"
+                                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                                placeholder="ex: \nHuman:, StopToken">
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 italic">Nota: Deixe os campos numéricos em branco ou
+                                        defina para
+                                        0/null onde aplicável para usar os padrões da API. Entradas inválidas serão
+                                        ignoradas ou
+                                        redefinidas para os padrões.</p>
+                                </fieldset>
+
+                                <!-- Save Button -->
+                                <div class="flex justify-end items-center space-x-3 pt-4">
+                                    <span id="prompt-status" class="text-sm italic"></span>
+                                    <button type="submit" id="save-prompts-button"
+                                        class="px-4 py-2 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+                                        Salvar Alterações
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Agent Workflow Panel -->
+                    <div id="chat-history-panel" class="hidden" role="tabpanel" aria-labelledby="chat-history-tab">
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                            <!-- Header with Download Button -->
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-history mr-2 text-gray-500"></i>
+                                    Histórico de Consultas
+                                </h2>
+                                <!-- NEW Download Button -->
+                                <span class="tooltip-container">
+                                    <a href="/download_chat_history" download="chat_history.json"
+                                        class="action-btn inline-flex items-center px-3 py-1.5 bg-white">
+                                        <i class="fas fa-download mr-1.5 text-xs"></i>
+                                        <span class="text-xs">Baixar Histórico</span>
+                                    </a>
+                                    <span class="custom-tooltip">Baixar histórico completo como JSON</span>
+                                </span>
+                                <!-- END Download Button -->
+                            </div>
+                            <p class="text-xs text-gray-500 mb-4">As consultas e respostas do agente são automaticamente
+                                registradas em uma <a
+                                    href="https://docs.pixeltable.com/docs/datastore/tables-and-operations"
+                                    target="_blank" class="text-gray-700 hover:underline">tabela</a> Pixeltable,
+                                permitindo
+                                fácil recuperação e análise.</p>
+
+                            <!-- Search and Pagination Controls -->
+                            <div class="flex flex-col space-y-4 mb-4">
+                                <!-- Search Bar -->
+                                <div class="relative">
+                                    <input type="text" id="history-search"
+                                        class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                        placeholder="Pesquisar no histórico...">
+                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                </div>
+
+                                <!-- Pagination Controls -->
+                                <div id="pagination-controls" class="flex items-center justify-between">
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <span id="pagination-info">Mostrando <span id="showing-start">0</span>-<span
+                                                id="showing-end">0</span> de <span id="total-entries">0</span>
+                                            entradas</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button id="prev-page"
+                                            class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                                            Anterior
+                                        </button>
+                                        <span id="page-numbers" class="flex items-center space-x-1">
+                                            <!-- Page numbers will be inserted here -->
+                                        </span>
+                                        <button id="next-page"
+                                            class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                                            Próximo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="workflow-table-container" class="overflow-x-auto relative">
+                                <!-- Loading state -->
+                                <div class="flex items-center justify-center py-8">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mr-2">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generated Images History Panel (NEW) -->
+                    <div id="image-history-panel" class="hidden" role="tabpanel" aria-labelledby="image-history-tab">
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-images mr-2 text-gray-500"></i>
+                                Histórico de Imagens Geradas
+                            </h2>
+                            <p class="text-xs text-gray-500 mb-4">As solicitações e resultados de geração de imagens são
+                                armazenados na Pixeltable. As imagens são geradas via <a
+                                    href="https://docs.pixeltable.com/docs/datastore/computed-columns" target="_blank"
+                                    class="text-gray-700 hover:underline">colunas computadas</a>
+                                chamando APIs externas.
+                            </p>
+
+                            <!-- NEW: Search Bar (mirrors Chat History) -->
+                            <div class="relative mb-4">
+                                <input type="text" id="image-history-search"
+                                    class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                    placeholder="Pesquisar em solicitações de imagem...">
+                                <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+                            <!-- END Search Bar -->
+
+                            <!-- Content Area for JS -->
+                            <div id="image-history-content" class="overflow-x-auto relative min-h-[200px]">
+                                <!-- Grid/Pagination will be loaded here -->
+                            </div>
+
+                            <!-- Loading Indicator (hidden initially) -->
+                            <div id="image-history-loading" class="hidden text-center py-8">
+                                <div class="inline-flex items-center">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500 mr-2">
+                                    </div>
+                                    <span class="text-gray-500">Carregando histórico de imagens...</span>
+                                </div>
+                            </div>
+
+                            <!-- Error Indicator (hidden initially) -->
+                            <div id="image-history-error" class="hidden text-center py-8 text-red-600 text-sm italic">
+                                <!-- Error message will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Memory Bank Panel (Previously Code Snippets) -->
+                    <div id="memory-panel" class="hidden" role="tabpanel" aria-labelledby="memory-tab">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <!-- MODIFIED: Header with Download Button -->
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-brain mr-2 text-gray-500"></i>
+                                    Banco de Memória
+                                </h2>
+                                <!-- NEW Download Button -->
+                                <span class="tooltip-container">
+                                    <a href="/download_memory" download="memory_bank.json"
+                                        class="action-btn inline-flex items-center px-3 py-1.5 bg-white">
+                                        <i class="fas fa-download mr-1.5 text-xs"></i>
+                                        <span class="text-xs">Baixar Banco de Memória</span>
+                                    </a>
+                                    <span class="custom-tooltip">Baixar banco de memória completo como JSON</span>
+                                </span>
+                                <!-- END Download Button -->
+                            </div>
+                            <p class="text-xs text-gray-500 mb-4">Itens salvos são armazenados e indexados na
+                                Pixeltable,
+                                permitindo uma <a
+                                    href="https://docs.pixeltable.com/docs/datastore/embedding-index#phase-3%3A-query"
+                                    target="_blank" class="text-gray-700 hover:underline">pesquisa semântica</a>
+                                eficiente usando <a
+                                    href="https://docs.pixeltable.com/docs/datastore/embedding-index#what-are-embedding-indexes"
+                                    target="_blank" class="text-gray-700 hover:underline">índices de embedding</a>.</p>
+
+                            <!-- Manual Add Form -->
+                            <div id="add-memory-form-container"
+                                class="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                                <h3 class="text-md font-semibold text-gray-700 mb-3">Adicionar Novo Item de Memória</h3>
+                                <form id="add-memory-form" class="space-y-3">
+                                    <div>
+                                        <label for="memory-content-input"
+                                            class="block text-sm font-medium text-gray-600 mb-1">Conteúdo:</label>
+                                        <textarea id="memory-content-input" name="content" rows="4"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                            placeholder="Digite o texto ou trecho de código a ser salvo..."></textarea>
+                                    </div>
+                                    <div class="flex items-center space-x-6">
+                                        <fieldset>
+                                            <legend class="block text-sm font-medium text-gray-600 mb-1">Tipo:</legend>
+                                            <div class="flex items-center space-x-4">
+                                                <label class="inline-flex items-center">
+                                                    <input type="radio" name="memory-type" value="text"
+                                                        class="form-radio text-gray-600" checked>
+                                                    <span class="ml-2 text-sm text-gray-700">Texto</span>
+                                                </label>
+                                                <label class="inline-flex items-center">
+                                                    <input type="radio" name="memory-type" value="code"
+                                                        class="form-radio text-gray-600">
+                                                    <span class="ml-2 text-sm text-gray-700">Código</span>
+                                                </label>
+                                            </div>
+                                        </fieldset>
+                                        <div id="memory-language-container" class="hidden flex-grow">
+                                            <label for="memory-language-input"
+                                                class="block text-sm font-medium text-gray-600 mb-1">Linguagem (se
+                                                Código):</label>
+                                            <input type="text" id="memory-language-input" name="language"
+                                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                                placeholder="ex: python, javascript">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="memory-context-input"
+                                            class="block text-sm font-medium text-gray-600 mb-1">Contexto/Fonte
+                                            (Opcional):</label>
+                                        <input type="text" id="memory-context-input" name="context_query"
+                                            class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                            placeholder="Descreva a origem ou propósito (ex: 'Nota do usuário', 'Excerto de documentação da API')">
+                                    </div>
+                                    <div class="flex justify-end items-center space-x-3">
+                                        <span id="add-memory-status" class="text-sm italic text-gray-500"></span>
+                                        <button type="submit" id="add-memory-button"
+                                            class="px-4 py-2 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+                                            Salvar no Banco de Memória
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Search Bar -->
+                            <div class="relative mb-4">
+                                <input type="text" id="memory-search-input"
+                                    class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                    placeholder="Pesquisar na memória salva por palavra-chave ou conteúdo...">
+                                <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+
+                            <!-- Memory Display Area -->
+                            <div id="memory-display-area" class="space-y-4">
+                                <!-- Items will be loaded here -->
+                                <div class="text-center py-6">
+                                    <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
+                                    <p class="text-sm text-gray-500 mt-2">Carregando memórias...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- How it Works Panel (REVISED with Actual Code Snippets & Corrected Doc Links) -->
+                    <div id="how-it-works-panel" class="hidden" role="tabpanel" aria-labelledby="how-it-works-tab">
+                        <div class="bg-white p-6 rounded-lg shadow prose max-w-none space-y-4">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center !mt-0">
+                                <i class="fas fa-cogs mr-2 text-gray-500"></i>
+                                Como Este App Funciona (Alimentado por Pixeltable)
+                            </h2>
+
+                            <p class="!mt-0">Este agente de IA multimodal é construído usando <a
+                                    href="https://docs.pixeltable.com/" target="_blank" rel="noopener"
+                                    class="text-indigo-600 hover:underline">Pixeltable<i
+                                        class="fas fa-external-link-alt text-xs ml-1"></i></a>, a infraestrutura de
+                                dados de IA de código aberto. Pixeltable fornece blocos de construção essenciais para
+                                simplificar aplicativos de IA complexos:</p>
+                            <ul class="list-disc list-inside text-sm !-mt-2 !mb-4">
+                                <li><a href="https://docs.pixeltable.com/docs/datastore/tables-and-operations"
+                                        target="_blank" rel="noopener"
+                                        class="text-indigo-600 hover:underline"><strong>Tabelas:</strong></a> Armazenar
+                                    referências a dados multimodais de forma eficiente.</li>
+                                <li><a href="https://docs.pixeltable.com/docs/datastore/computed-columns"
+                                        target="_blank" rel="noopener"
+                                        class="text-indigo-600 hover:underline"><strong>Colunas Computadas:</strong></a>
+                                    Executar automaticamente funções Python ou modelos de IA quando os dados mudam.</li>
+                                <li><a href="https://docs.pixeltable.com/docs/datastore/views" target="_blank"
+                                        rel="noopener"
+                                        class="text-indigo-600 hover:underline"><strong>Views</strong></a> & <a
+                                        href="https://docs.pixeltable.com/docs/datastore/iterators" target="_blank"
+                                        rel="noopener"
+                                        class="text-indigo-600 hover:underline"><strong>Iterators:</strong></a>
+                                    Transformar dados on-the-fly sem duplicação.</li>
+                                <li><a href="https://docs.pixeltable.com/docs/datastore/embedding-index" target="_blank"
+                                        rel="noopener" class="text-indigo-600 hover:underline"><strong>Embedding
+                                            Indexes:</strong></a> Habilitar pesquisa semântica rápida.</li>
+                                <li><a href="https://docs.pixeltable.com/docs/datastore/embedding-index#phase-3-query"
+                                        target="_blank" rel="noopener"
+                                        class="text-indigo-600 hover:underline"><strong>Query Functions:</strong></a>
+                                    Definir lógica de pesquisa reutilizável.</li>
+                            </ul>
+                            <p>Aqui está como esses conceitos impulsionam os recursos que você vê, com trechos de código
+                                reais do `setup_pixeltable.py` desta aplicação:</p>
+
+                            <!-- Section 1: Handling Files -->
+                            <div class="border rounded-md overflow-hidden">
+                                <div id="hiw-header-1" class="result-header" onclick="toggleAccordion(this)"
+                                    data-accordion-target="#hiw-content-1" aria-expanded="false">
+                                    <div class="result-header-content">
+                                        <i class="fas fa-file-upload text-gray-500"></i>
+                                        <h3 class="!text-lg !font-medium !m-0 text-gray-700">1. Gerenciando seus
+                                            Arquivos
+                                            (Tabelas & Colunas Computadas)</h3>
+                                    </div>
+                                    <i
+                                        class="fas fa-chevron-down transform transition-transform duration-200 text-gray-500 hiw-chevron"></i>
+                                </div>
+                                <div id="hiw-content-1" class="result-content hidden">
+                                    <p>Arquivos são gerenciados usando Pixeltable <a
+                                            href="https://docs.pixeltable.com/docs/datastore/tables-and-operations"
+                                            target="_blank" rel="noopener"
+                                            class="text-indigo-600 hover:underline"><strong>Tabelas</strong></a>, que
+                                        armazenam referências eficientemente usando <a
+                                            href="https://docs.pixeltable.com/docs/reference/types/media-types"
+                                            target="_blank" rel="noopener" class="text-indigo-600 hover:underline">tipos
+                                            multimodais</a> integrados:</p>
+                                    <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From setup_pixeltable.py
+images = pxt.create_table(
+    "agents.images",
+    {"image": pxt.Image, "uuid": pxt.String, "timestamp": pxt.Timestamp},
+    if_exists="ignore",
+)
+documents = pxt.create_table(
+    "agents.collection",
+    {"document": pxt.Document, "uuid": pxt.String, "timestamp": pxt.Timestamp},
+    if_exists="ignore",
+)
+</code></pre>
+                                    <p class="mt-2">Processing happens via <a
+                                            href="https://docs.pixeltable.com/docs/datastore/computed-columns"
+                                            target="_blank" rel="noopener"
+                                            class="text-indigo-600 hover:underline"><strong>Colunas
+                                                Computadas</strong></a>, que aplicam automaticamente funções (como
+                                        redimensionamento
+                                        ou chamadas de API) quando os dados são adicionados:</p>
+                                    <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From setup_pixeltable.py
+# Gerar miniaturas automaticamente quando imagens são adicionadas
+images.add_computed_column(
+    thumbnail=pxt_image.b64_encode(
+        pxt_image.resize(images.image, size=(96, 96)) # Sidebar size
+    ),
+    if_exists="ignore",
+)
+
+# Extract audio automatically when videos are added
+videos.add_computed_column(
+    audio=extract_audio(videos.video, format="mp3"),
+    if_exists="ignore"
+)
+</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Answering Questions -->
+                            <div class="border rounded-md overflow-hidden">
+                                <div id="hiw-header-2" class="result-header" onclick="toggleAccordion(this)"
+                                    data-accordion-target="#hiw-content-2" aria-expanded="false">
+                                    <div class="result-header-content">
+                                        <i class="fas fa-brain text-gray-500"></i>
+                                        <h3 class="!text-lg !font-medium !m-0 text-gray-700">2. Respondendo Perguntas
+                                            (Fluxo de Trabalho, Views, Índices, Consultas)</h3>
+                                    </div>
+                                    <i
+                                        class="fas fa-chevron-down transform transition-transform duration-200 text-gray-500 hiw-chevron"></i>
+                                </div>
+                                <div id="hiw-content-2" class="result-content hidden">
+                                    <p>A lógica central do agente funciona como um fluxo de trabalho declarativo na
+                                        tabela <code>agents.tools</code>. Os passos principais envolvem transformar
+                                        dados e
+                                        realizar pesquisas semânticas:
+                                    </p>
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li><strong>Transformação de Dados (<a
+                                                    href="https://docs.pixeltable.com/docs/datastore/views"
+                                                    target="_blank" rel="noopener"
+                                                    class="text-indigo-600 hover:underline">Views</a> & <a
+                                                    href="https://docs.pixeltable.com/docs/datastore/iterators"
+                                                    target="_blank" rel="noopener"
+                                                    class="text-indigo-600 hover:underline">Iterators</a>):</strong>
+                                            Os documentos são fragmentados on-the-fly usando uma View e um Iterator
+                                            DocumentSplitter, evitando duplicação de dados:
+                                            <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From setup_pixeltable.py
+chunks = pxt.create_view(
+    "agents.chunks",
+    documents, # Base table
+    iterator=DocumentSplitter.create(
+        document=documents.document,
+        separators="token_limit", # Split by token count
+        limit=300
+    ),
+    if_exists="ignore",
+)
+</code></pre>
+                                        </li>
+                                        <li><strong>Pesquisa Semântica (<a
+                                                    href="https://docs.pixeltable.com/docs/datastore/embedding-index"
+                                                    target="_blank" rel="noopener"
+                                                    class="text-indigo-600 hover:underline">Índices de
+                                                    Embedding</a>):</strong> Os índices são adicionados às tabelas/views
+                                            para
+                                            habilitar uma pesquisa de similaridade rápida usando modelos integrados como
+                                            Sentence Transformers ou CLIP:
+                                            <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From setup_pixeltable.py
+# Indexar fragmentos de documentos para pesquisa de texto
+chunks.add_embedding_index(
+    "text",
+    string_embed=sentence_transformer.using(model_id=config.EMBEDDING_MODEL_ID),
+    if_exists="ignore",
+)
+# Indexar imagens para pesquisa multimodal
+images.add_embedding_index(
+    "image",
+    embedding=clip.using(model_id=config.CLIP_MODEL_ID),
+    if_exists="ignore",
+)
+</code></pre>
+                                        </li>
+                                        <li><strong>Recuperação de Contexto (<a
+                                                    href="https://docs.pixeltable.com/docs/datastore/embedding-index#phase-3-query"
+                                                    target="_blank" rel="noopener"
+                                                    class="text-indigo-600 hover:underline">Funções de
+                                                    Consulta</a>):</strong> A lógica de pesquisa reutilizável é
+                                            definida
+                                            usando o decorador `@pxt.query`. Essas funções são chamadas por colunas
+                                            computadas no fluxo de trabalho principal:
+                                            <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From setup_pixeltable.py
+@pxt.query
+def search_documents(query_text: str):
+    sim = chunks.text.similarity(query_text)
+    return (
+        chunks.order_by(sim, asc=False)
+        .select(chunks.text, source_doc=chunks.document, sim=sim)
+        .where(sim > 0.8)
+        .limit(10)
+    )
+</code></pre>
+                                        </li>
+                                        <li><strong>Orquestração de Fluxo de Trabalho:</strong> A sequência de colunas
+                                            computadas na tabela <code>agents.tools</code> define todo o processo
+                                            declarativamente. Ele inclui:
+                                            <ul class="list-disc list-inside ml-4 text-sm">
+                                                <li>Chamando funções de pesquisa (como <code>search_documents</code>
+                                                    mostrado acima).</li>
+                                                <li>Usando <strong>Funções Definidas pelo Usuário (UDFs)</strong> para
+                                                    executar código Python personalizado, como buscar dados externos.
+                                                    UDFs são criados com o decorador <code>@pxt.udf</code>:
+                                                    <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From functions.py
+@pxt.udf
+def get_latest_news(topic: str) -> str:
+    """Fetch latest news for a given topic using NewsAPI."""
+    # ... implementation omitted for brevity ...
+    return formatted_news
+</code></pre>
+                                                </li>
+                                                <li>Habilitando <strong>Chamada de Ferramentas</strong> registrando
+                                                    UDFs como ferramentas para o LLM. Pixeltable fornece helpers para
+                                                    isso:
+                                                    <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From setup_pixeltable.py
+# Define available tools
+tools = pxt.tools(
+    # functions.get_latest_news,
+    # functions.fetch_financial_data,
+    # functions.search_news
+)
+
+# Pass tools to the LLM (Claude) via a computed column
+tool_agent.add_computed_column(
+    initial_response=messages(
+        model=config.CLAUDE_MODEL_ID,
+        system=tool_agent.initial_system_prompt,
+        messages=[{"role": "user", "content": tool_agent.prompt}],
+        tools=tools, # Make tools available
+        tool_choice=tools.choice(required=True), # Force tool use
+        # ... other parameters ...
+    ),
+    if_exists="replace",
+)
+
+# Execute the chosen tool using invoke_tools
+tool_agent.add_computed_column(
+    tool_output=invoke_tools(tools, tool_agent.initial_response),
+    if_exists="replace"
+)
+</code></pre>
+                                                </li>
+                                                <li>Chamando LLMs (como Claude ou Mistral) para raciocinar, gerar texto
+                                                    ou escolher ferramentas.</li>
+                                            </ul>
+                                            Pixeltable gerencia automaticamente a ordem de execução e o armazenamento
+                                            em cache com base nesses passos declarativos.
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Generating Images -->
+                            <div class="border rounded-md overflow-hidden">
+                                <div id="hiw-header-3" class="result-header" onclick="toggleAccordion(this)"
+                                    data-accordion-target="#hiw-content-3" aria-expanded="false">
+                                    <div class="result-header-content">
+                                        <i class="fas fa-paint-brush text-gray-500"></i>
+                                        <h3 class="!text-lg !font-medium !m-0 text-gray-700">3. Gerando Imagens
+                                            (Colunas Computadas & APIs)</h3>
+                                    </div>
+                                    <i
+                                        class="fas fa-chevron-down transform transition-transform duration-200 text-gray-500 hiw-chevron"></i>
+                                </div>
+                                <div id="hiw-content-3" class="result-content hidden">
+                                    <p>A geração de imagens é acionada adicionando um prompt à tabela
+                                        <code>agents.image_generation_tasks</code>. Uma <a
+                                            href="https://docs.pixeltable.com/docs/datastore/computed-columns"
+                                            target="_blank" rel="noopener"
+                                            class="text-indigo-600 hover:underline"><strong>Coluna
+                                                Computada</strong></a>
+                                        chama a API DALL-E 3 via a integração OpenAI do Pixeltable:
+                                    </p>
+                                    <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From setup_pixeltable.py
+image_gen_tasks.add_computed_column(
+    generated_image=openai.image_generations(
+        prompt=image_gen_tasks.prompt,
+        model=config.DALLE_MODEL_ID,
+        size="1024x1024"
+    ),
+    if_exists="ignore",
+)
+</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Section 4: Memory & History -->
+                            <div class="border rounded-md overflow-hidden">
+                                <div id="hiw-header-4" class="result-header" onclick="toggleAccordion(this)"
+                                    data-accordion-target="#hiw-content-4" aria-expanded="false">
+                                    <div class="result-header-content">
+                                        <i class="fas fa-save text-gray-500"></i>
+                                        <h3 class="!text-lg !font-medium !m-0 text-gray-700">4. Lembrando Coisas
+                                            (Tabelas & Índices)</h3>
+                                    </div>
+                                    <i
+                                        class="fas fa-chevron-down transform transition-transform duration-200 text-gray-500 hiw-chevron"></i>
+                                </div>
+                                <div id="hiw-content-4" class="result-content hidden">
+                                    <p>A persistência é alcançada usando Pixeltable <a
+                                            href="https://docs.pixeltable.com/docs/datastore/tables-and-operations"
+                                            target="_blank" rel="noopener"
+                                            class="text-indigo-600 hover:underline"><strong>Tabelas</strong></a>:</p>
+                                    <ul class="list-disc list-inside space-y-2">
+                                        <li><strong>Banco de Memória:</strong> Itens salvos são armazenados em
+                                            <code>agents.memory_bank</code>. Um <a
+                                                href="https://docs.pixeltable.com/docs/datastore/embedding-index"
+                                                target="_blank" rel="noopener"
+                                                class="text-indigo-600 hover:underline"><strong>Índice de
+                                                    Embedding</strong></a> habilita pesquisa semântica:
+                                            <pre class="!m-0 !mt-1"><code class="language-python hljs">
+# From setup_pixeltable.py
+memory_bank.add_embedding_index(
+    column="content",
+    string_embed=sentence_embed_model, # Defined earlier
+    if_exists="ignore",
+)
+</code></pre>
+                                        </li>
+                                        <li><strong>Histórico de Chat:</strong> Turnos de conversa são registrados em
+                                            <code>agents.chat_history</code>, permitindo recuperação de histórico
+                                            recente ou
+                                            pesquisa semântica sobre toda a conversa (também usando um índice de
+                                            embedding).
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Conclusion -->
+                            <p class="!mt-6">By combining these primitives – <a
+                                    href="https://docs.pixeltable.com/docs/datastore/tables-and-operations"
+                                    target="_blank" rel="noopener" class="text-indigo-600 hover:underline">Tabelas</a>,
+                                <a href="https://docs.pixeltable.com/docs/datastore/computed-columns" target="_blank"
+                                    rel="noopener" class="text-indigo-600 hover:underline">Colunas Computadas</a>, <a
+                                    href="https://docs.pixeltable.com/docs/datastore/views" target="_blank"
+                                    rel="noopener" class="text-indigo-600 hover:underline">Views</a>, e <a
+                                    href="https://docs.pixeltable.com/docs/datastore/embedding-index" target="_blank"
+                                    rel="noopener" class="text-indigo-600 hover:underline">Índices de Embedding</a> –
+                                Pixeltable fornece uma maneira poderosa e declarativa de construir e orquestrar
+                                aplicações
+                                de IA complexas e multimodais como este agente.
+                            </p>
+                            <p>Explore a <a href="https://docs.pixeltable.com/" target="_blank" rel="noopener"
+                                    class="text-indigo-600 hover:underline">Documentação Oficial do Pixeltable<i
+                                        class="fas fa-external-link-alt text-xs ml-1"></i></a> para saber mais.</p>
+
+                            <!-- Pixelagent Mention -->
+                            <div class="border rounded-md overflow-hidden mt-4">
+                                <div id="hiw-header-5" class="result-header" onclick="toggleAccordion(this)"
+                                    data-accordion-target="#hiw-content-5" aria-expanded="false">
+                                    <div class="result-header-content">
+                                        <i class="fas fa-lightbulb text-gray-500"></i>
+                                        <h3 class="!text-lg !font-medium !m-0 text-gray-700">Conceitos Adicionais:
+                                            Arquiteturas de
+                                            Agentes (Pixelagent)</h3>
+                                    </div>
+                                    <i
+                                        class="fas fa-chevron-down transform transition-transform duration-200 text-gray-500 hiw-chevron"></i>
+                                </div>
+                                <div id="hiw-content-5" class="result-content hidden">
+                                    <p>Para aqueles interessados em padrões para construir sistemas agentivos, o
+                                        repositório <a href="https://github.com/pixeltable/pixelagent" target="_blank"
+                                            rel="noopener" class="text-indigo-600 hover:underline">Pixelagent<i
+                                                class="fas fa-external-link-alt text-xs ml-1"></i></a> serve
+                                        como um modelo. Ele explora como infraestrutura como Pixeltable pode unificar
+                                        LLMs,
+                                        armazenamento e orquestração para aplicações de IA robustas e com estado
+                                        envolvendo memória
+                                        e uso de ferramentas.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Search Bar moved below Upload -->
+                <!-- Upload Files Section -->
+                <div class="sidebar-section">
+                    <!-- REMOVED onclick and icon from header -->
+                    <div class="sidebar-header" id="upload-header">
+                        <div class="flex items-center">
+                            <i class="fas fa-folder text-gray-500 sidebar-icon"></i>
+                            <h2 class="text-lg font-semibold">Gerenciamento de Arquivos</h2>
+                        </div>
+                        <!-- Chevron icon removed -->
+                    </div>
+                    <!-- REMOVED hidden class from content div -->
+                    <div id="upload-section" class="sidebar-content">
+                        <!-- <p class="text-xs text-gray-500 mb-4">
+                            Add files by uploading, dropping, or entering a URL.
+                            Pixeltable handles various <a
+                                href="https://docs.pixeltable.com/docs/datastore/bringing-data" target="_blank"
+                                class="text-gray-700 hover:underline">media types</a> and stores references efficiently.
+                        </p> -->
+                        <form id="upload-form" class="space-y-4">
+                            <!-- Upload Box -->
+                            <div
+                                class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-500 transition-colors mb-4">
+                                <input type="file" id="file-input" class="hidden"
+                                    accept=".pdf,.jpg,.jpeg,.png,.mp4,.mov,.avi,.txt,.md,.html,.xml,.mp3,.wav,.m4a"
+                                    multiple>
+                                <label for="file-input" class="cursor-pointer block">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-sm text-gray-600">Arraste e solte arquivos aqui ou clique para
+                                        fazer upload<br>
+                                        <span class="text-xs text-gray-500">(PDF, JPG, PNG, MP4, MP3, WAV, TXT, MD,
+                                            etc.)</span>
+                                    </p>
+                                </label>
+                            </div>
+
+                            <!-- Upload Status (kept separate) -->
+                            <div id="upload-status" class="hidden mt-2">
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded mb-1">
+                                    {# ADDED: Spinner Icon #}
+                                    <i id="upload-progress-spinner"
+                                        class="fas fa-spinner fa-spin text-gray-500 mr-2 hidden"></i>
+                                    <span id="file-name" class="text-sm text-gray-600 truncate mr-2"></span>
+                                    {# REMOVED: Old Progress Bar Container (kept hidden in JS just in case) #}
+                                    {# <div id="upload-progress-container" class="flex-grow hidden">
+                                        <progress id="upload-progress-bar" value="0" max="100"
+                                            class="w-full h-2 rounded-full overflow-hidden"></progress>
+                                    </div> #}
+                                    {# REMOVED: Old Percentage Span (kept hidden in JS just in case) #}
+                                    {# <span id="upload-percentage"
+                                        class="text-xs text-gray-500 ml-2 w-10 text-right hidden">0%</span> #}
+                                    <span id="upload-complete-icon" class="text-green-500 ml-auto hidden"><i
+                                            class="fas fa-check-circle"></i></span> {# Use ml-auto to push icons right
+                                    #}
+                                    <span id="upload-error-icon" class="text-red-500 ml-auto hidden"><i
+                                            class="fas fa-exclamation-circle"></i></span> {# Use ml-auto #}
+                                </div>
+                                <p id="upload-error-message" class="text-xs text-red-600 mt-1"></p> {# For detailed
+                                errors #}
+                            </div>
+
+                            <!-- URL Input Section (moved structure slightly, removed label) -->
+                            <div class="flex space-x-2 items-center">
+                                <input type="url" id="url-input"
+                                    class="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                    placeholder="Ou digite a URL do arquivo...">
+                                <!-- MODIFIED: Replaced text with icon, added tooltip -->
+                                <span class="tooltip-container">
+                                    <button type="button" id="url-submit-button" onclick="handleUrlSubmit()"
+                                        class="w-10 h-10 flex items-center justify-center bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1"
+                                        aria-label="Add URL">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Adicionar URL</span>
+                                </span>
+                            </div>
+                            <div id="url-status" class="mt-2 text-sm"></div>
+                        </form>
+                    </div>
+
+                    <!-- Moved Search Bar Container -->
+                    <div id="sidebar-search-container">
+                        <input type="text" id="sidebar-search" placeholder="Filtrar arquivos por nome...">
+                    </div>
+
+                    <!-- Managed Documents Section -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header sidebar-toggle-button" data-target-id="documents-section">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-gray-500 sidebar-icon"></i>
+                                <h2 class="text-lg font-semibold text-gray-800">Documentos <span id="documents-count"
+                                        class="text-sm font-normal text-gray-400 ml-1"></span></h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="tooltip-container">
+                                    <button type="button"
+                                        class="text-gray-400 hover:text-red-600 p-1.5 rounded hover:bg-gray-100 sidebar-delete-all-btn"
+                                        data-filetype="document">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Excluir todos os documentos</span>
+                                </span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                    id="documents-section-icon"></i>
+                            </div>
+                        </div>
+                        <div id="documents-section" class="sidebar-content hidden">
+                            <div id="documents-list" class="sidebar-file-list space-y-1">
+                                <p class="italic text-gray-400">Carregando documentos...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Managed Images Section -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header sidebar-toggle-button" data-target-id="images-section">
+                            <div class="flex items-center">
+                                <i class="fas fa-image text-gray-500 sidebar-icon"></i>
+                                <h2 class="text-lg font-semibold text-gray-800">Imagens <span id="images-count"
+                                        class="text-sm font-normal text-gray-400 ml-1"></span></h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="tooltip-container">
+                                    <button type="button"
+                                        class="text-gray-400 hover:text-red-600 p-1.5 rounded hover:bg-gray-100 sidebar-delete-all-btn"
+                                        data-filetype="image">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Excluir todas as imagens</span>
+                                </span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                    id="images-section-icon"></i>
+                            </div>
+                        </div>
+                        <div id="images-section" class="sidebar-content hidden">
+                            <div id="images-list" class="sidebar-grid-container">
+                                <p class="italic text-gray-400">Carregando imagens...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Managed Videos Section -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header sidebar-toggle-button" data-target-id="videos-section">
+                            <div class="flex items-center">
+                                <i class="fas fa-video text-gray-500 sidebar-icon"></i>
+                                <h2 class="text-lg font-semibold text-gray-800">Vídeos <span id="videos-count"
+                                        class="text-sm font-normal text-gray-400 ml-1"></span></h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="tooltip-container">
+                                    <button type="button"
+                                        class="text-gray-400 hover:text-red-600 p-1.5 rounded hover:bg-gray-100 sidebar-delete-all-btn"
+                                        data-filetype="video">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Excluir todos os vídeos</span>
+                                </span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                    id="videos-section-icon"></i>
+                            </div>
+                        </div>
+                        <div id="videos-section" class="sidebar-content hidden">
+                            <div id="videos-list" class="sidebar-grid-container">
+                                <p class="italic text-gray-400">Carregando vídeos...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Managed Audios Section (NEW) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header sidebar-toggle-button" data-target-id="audios-section">
+                            <div class="flex items-center">
+                                <i class="fas fa-volume-up text-gray-500 sidebar-icon"></i>
+                                <h2 class="text-lg font-semibold text-gray-800">Áudios <span id="audios-count"
+                                        class="text-sm font-normal text-gray-400 ml-1"></span></h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="tooltip-container">
+                                    <button type="button"
+                                        class="text-gray-400 hover:text-red-600 p-1.5 rounded hover:bg-gray-100 sidebar-delete-all-btn"
+                                        data-filetype="audio">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Excluir todos os áudios</span>
+                                </span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                    id="audios-section-icon"></i>
+                            </div>
+                        </div>
+                        <div id="audios-section" class="sidebar-content hidden">
+                            <div id="audios-list" class="sidebar-file-list space-y-1">
+                                <p class="italic text-gray-400">Carregando áudios...</p>
+                            </div>
+                        </div>
+                    </div>
+
+            </aside>
+        </div>
+        </div>
+    </main>
+
+    <footer class="container px-4 py-6 mt-12 text-center text-sm text-gray-500 border-t border-gray-200">
+        <!-- 1. Links -->
+        <!-- <div class="mb-4 space-x-4 flex flex-wrap justify-center sm:flex-nowrap">
+            <a href="https://docs.pixeltable.com/" target="_blank" rel="noopener"
+                class="inline-flex items-center text-gray-600 hover:text-gray-800 hover:underline text-sm">
+                <i class="fas fa-book-open mr-1.5 text-base"></i>
+                Documentation
+            </a>
+            <span class="text-gray-300">|</span>
+            <a href="https://discord.gg/QPyqFYx2UN" target="_blank" rel="noopener"
+                class="inline-flex items-center text-gray-600 hover:text-gray-800 hover:underline text-sm">
+                <i class="fab fa-discord mr-1.5 text-base"></i>
+                Community
+            </a>
+            <span class="text-gray-300">|</span>
+            <a href="https://github.com/pixeltable/pixeltable" target="_blank" rel="noopener"
+                class="inline-flex items-center text-gray-600 hover:text-gray-800 hover:underline text-sm">
+                <i class="fab fa-github mr-1.5 text-base"></i>
+                Star on GitHub
+            </a>
+            <span class="text-gray-300">|</span>
+            <a href="https://www.pixeltable.com/legal" target="_blank" rel="noopener"
+                class="inline-flex items-center text-gray-600 hover:text-gray-800 hover:underline text-sm">
+                <i class="fas fa-gavel mr-1.5 text-base"></i>
+                Legal
+            </a>
+        </div> -->
+        <!-- 2. Sentence -->
+        <!-- <p class="text-sm text-gray-500 mt-2">
+            The AI <a href="http://docs.pixeltable.com/" target="_blank" rel="noopener"
+                class="text-gray-700 hover:underline">Data Infrastructure</a>,
+            providing a declarative, incremental approach for multimodal workloads.
+        </p> -->
+        <!-- 3. Disclaimer -->
+        <!-- <p class="mt-2 text-sm text-gray-500">
+            AI responses may be inaccurate or incomplete. Please verify important information.
+        </p> -->
+        <!-- 4. Copyright -->
+        <!-- <p class="mt-2 text-sm">&copy; 2025 Pixeltable. All rights reserved.</p> -->
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <span class="tooltip-container fixed bottom-6 left-6 z-50">
+        <button id="scroll-to-top-btn"
+            class="hidden bg-gray-700 hover:bg-gray-900 text-white p-3 rounded-full shadow-lg transition-opacity duration-300">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        <span class="custom-tooltip">Voltar ao topo</span>
+    </span>
+
+    <!-- NEW: History Detail Modal -->
+    <div id="history-detail-modal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden flex items-center justify-center p-4 md:p-8">
+        <div class="relative mx-auto shadow-lg rounded-lg bg-white w-full max-w-5xl max-h-[80vh]">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b border-gray-200 p-4 rounded-t-lg bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-700">Detalhes da Consulta</h3>
+                <button id="modal-close-button" type="button"
+                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
+                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="sr-only">Fechar modal</span>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div id="modal-content-area" class="p-6 space-y-4 overflow-y-auto max-h-[calc(80vh-110px)]">
+                <!-- Pixeltable Note for Modal -->
+                {# MODIFIED: Make note less prominent #}
+                <p class="text-xs text-gray-400 italic text-center -mt-2 mb-4">Detalhes da consulta.</p>
+                <!-- Loading State -->
+                <div id="modal-loading-state" class="text-center py-10">
+                    <i class="fas fa-spinner fa-spin text-gray-400 text-2xl"></i>
+                    <p class="text-sm text-gray-500 mt-2">Carregando detalhes...</p>
+                </div>
+                <!-- Content (populated by JS) - UPDATED STRUCTURE -->
+                <div id="modal-data-content" class="hidden modal-flex-layout">
+                    <!-- Timestamp remains at the top -->
+                    <div class="w-full mb-3">
+                        <h4 class="modal-section-header">Timestamp</h4>
+                        <p id="modal-timestamp" class="text-sm text-gray-800"></p>
+                    </div>
+                    <!-- Query Section -->
+                    <div class="modal-flex-column">
+                        <h4 class="modal-section-header">Pergunta</h4>
+                        <pre id="modal-query" class="modal-content-box whitespace-pre-wrap break-words"></pre>
+                    </div>
+                    <!-- Response Section -->
+                    <div class="modal-flex-column">
+                        <h4 class="modal-section-header">Resposta</h4>
+                        <div id="modal-response" class="modal-content-box prose prose-sm max-w-none text-gray-800">
+                        </div>
+                    </div>
+                </div>
+                <!-- Error State -->
+                <div id="modal-error-state" class="hidden text-center py-10">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    <p id="modal-error-message" class="text-sm text-red-600 mt-2">Falha ao carregar detalhes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Image Detail Modal -->
+    <div id="image-detail-modal"
+        class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
+        onclick="closeImageModal()">
+        <div class="bg-white rounded-lg shadow-xl p-4 md:p-6 max-w-3xl w-full max-h-[90vh] overflow-auto relative"
+            onclick="event.stopPropagation();">
+            <!-- Close Button -->
+            <button id="modal-image-close-button"
+                class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl" title="Close">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <!-- Image -->
+            <div class="mb-4 flex justify-center max-h-[60vh]">
+                <img id="modal-image" src="" alt="Detalhe da Imagem Gerada"
+                    class="max-w-full max-h-full object-contain rounded">
+            </div>
+
+            <!-- Details -->
+            <div class="text-sm">
+                {# MODIFIED: Add classes for wrapping #}
+                <p class="text-gray-800 mb-2 whitespace-normal break-words"><strong>Prompt:</strong> <span
+                        id="modal-prompt"></span></p>
+            </div>
+
+            <!-- Actions -->
+            <div class="text-center space-x-3">
+                {# MODIFIED: Apply action-btn class and alignment #}
+                <a id="modal-download" href="#" download="generated_image.png"
+                    class="action-btn inline-flex items-center">
+                    <i class="fas fa-download"></i> {# Icon margin handled by .action-btn i rule #}
+                    <span>Baixar Imagem</span> {# Wrap text in span #}
+                </a>
+                <!-- NEW: Delete Button -->
+                {# MODIFIED: Apply action-btn class and alignment, add red styling #}
+                <button id="modal-delete-button" type="button"
+                    class="action-btn inline-flex items-center text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700">
+                    <i class="fas fa-trash-alt"></i> {# Icon margin handled by .action-btn i rule #}
+                    <span>Excluir Imagem</span> {# Wrap text in span #}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# --- NEW: Persona Management Modal --- #}
+    <div id="persona-modal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden flex items-center justify-center p-4 md:p-8">
+        {# MODIFIED: Increased max-width #}
+        <div class="relative mx-auto shadow-lg rounded-lg bg-white w-full max-w-5xl max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b border-gray-200 p-4 rounded-t-lg bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-700">Gerenciar Personas Personalizadas</h3>
+                <button id="persona-modal-close-btn" type="button"
+                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
+                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="sr-only">Fechar modal</span>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            {# MODIFIED: Added grid layout #}
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[calc(90vh-110px)]">
+
+                <!-- Create New Persona Form (Column 1) -->
+                <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-4">
+                    <h4 class="text-md font-semibold text-gray-700 mb-3">Criar Nova Persona</h4>
+                    <form id="create-persona-form" class="space-y-4">
+                        <div>
+                            <label for="persona-name-input" class="block text-sm font-medium text-gray-600 mb-1">Nome da
+                                Persona:</label>
+                            <input type="text" id="persona-name-input" name="persona_name" required
+                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                placeholder="ex: Resumo Conciso">
+                        </div>
+                        <div>
+                            <label for="persona-initial-prompt"
+                                class="block text-sm font-medium text-gray-600 mb-1">Prompt Inicial (Seleção de
+                                Ferramentas):</label>
+                            <textarea id="persona-initial-prompt" name="initial_prompt" rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                placeholder="Digite o prompt inicial..."></textarea>
+                        </div>
+                        <div>
+                            <label for="persona-final-prompt" class="block text-sm font-medium text-gray-600 mb-1">Final
+                                Prompt (Geração de Relatório):</label>
+                            <textarea id="persona-final-prompt" name="final_prompt" rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                placeholder="Digite o prompt final..."></textarea>
+                        </div>
+                        <fieldset class="space-y-3 pt-3 border-t border-gray-200">
+                            <legend class="text-sm font-medium text-gray-600 mb-1">Parâmetros do LLM (Opcional - deixe
+                                em branco para os padrões)</legend>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                                <div>
+                                    <label for="persona-max_tokens"
+                                        class="text-sm font-medium text-gray-600 mb-1 block">Máximo de Tokens:</label>
+                                    <input type="number" id="persona-max_tokens" name="max_tokens" min="1"
+                                        class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                        placeholder="ex: 1024">
+                                </div>
+                                <div>
+                                    <label for="persona-temperature"
+                                        class="text-sm font-medium text-gray-600 mb-1 block">Temperatura:</label>
+                                    <input type="number" id="persona-temperature" name="temperature" min="0" max="2"
+                                        step="0.1"
+                                        class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                        placeholder="ex: 0.3 (0-2)">
+                                </div>
+                                <div>
+                                    <label for="persona-top_k" class="text-sm font-medium text-gray-600 mb-1 block">Top
+                                        K:</label>
+                                    <input type="number" id="persona-top_k" name="top_k" min="1"
+                                        class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                        placeholder="Deixe em branco para o padrão">
+                                </div>
+                                <div>
+                                    <label for="persona-top_p" class="text-sm font-medium text-gray-600 mb-1 block">Top
+                                        P:</label>
+                                    <input type="number" id="persona-top_p" name="top_p" min="0" max="1" step="0.01"
+                                        class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                        placeholder="ex: 0.3 (0-1)">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="persona-stop_sequences"
+                                        class="text-sm font-medium text-gray-600 mb-1 block">Sequências de Parada
+                                        (separadas por vírgula):</label>
+                                    <input type="text" id="persona-stop_sequences" name="stop_sequences"
+                                        class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                        placeholder="ex: \nHuman:, StopToken">
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 italic pt-2">Nota: Deixe os campos numéricos em branco ou
+                                defina para 0/null onde aplicável para usar os padrões do sistema. Entradas inválidas
+                                serão ignoradas ou redefinidas para os padrões.</p>
+                        </fieldset>
+                        <div class="flex justify-end items-center space-x-3 pt-3 border-t border-gray-200">
+                            <span id="create-persona-status" class="text-sm italic text-gray-500 flex-grow"></span>
+                            <button type="submit" id="save-new-persona-btn"
+                                class="px-4 py-2 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+                                Salvar Nova Persona
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Custom Personas (Column 2) -->
+                {# MODIFIED: Removed mt-6 as grid gap handles spacing #}
+                <div class="space-y-4">
+                    <h4 class="text-md font-semibold text-gray-700 mb-3">Minhas Personas Salvas</h4>
+                    <div id="custom-personas-list" class="space-y-2">
+                        <!-- List will be populated by JS -->
+                        <p class="text-sm text-gray-500 italic">Nenhuma persona personalizada salva ainda.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

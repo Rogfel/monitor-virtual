@@ -1,0 +1,117 @@
+2025-08-18 19:04:36,877 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 19:04:42,080 ERROR: FATAL: Could not connect to primary database table 'agents.tools': Table record not found: 4d2cac8b-c056-4bc8-a40d-52f88ac8e984:None [in /home/rogfel/projects/pixelbot/endpoint.py:215]
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/endpoint.py", line 208, in <module>
+    tool_agent = pxt.get_table("agents.tools")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/globals.py", line 401, in get_table
+    return Catalog.get().get_table(path_obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 73, in loop
+    return op(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 587, in get_table
+    obj._tbl_version.get().ensure_md_loaded()
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 449, in ensure_md_loaded
+    _ = col.value_expr
+        ^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/column.py", line 134, in value_expr
+    self._value_expr = exprs.Expr.from_dict(self.value_expr_dict)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/expr.py", line 528, in from_dict
+    return type_class._from_dict(d, components)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/function_call.py", line 428, in _from_dict
+    fn = func.Function.from_dict(d['fn'])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/func/function.py", line 469, in from_dict
+    return func_class._from_dict(d)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/func/query_template_function.py", line 95, in _from_dict
+    return cls(DataFrame.from_dict(d['df']), Signature.from_dict(d['signature']), name=d['name'])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/dataframe.py", line 1024, in from_dict
+    [(exprs.Expr.from_dict(e), name) for e, name in d['select_list']]
+      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/expr.py", line 528, in from_dict
+    return type_class._from_dict(d, components)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/column_ref.py", line 283, in _from_dict
+    col = cls.get_column(d)
+          ^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/column_ref.py", line 276, in get_column
+    tbl_version = catalog.Catalog.get().get_tbl_version(tbl_id, version)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 727, in get_tbl_version
+    self._tbl_versions[tbl_id, effective_version] = self._load_tbl_version(tbl_id, effective_version)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 979, in _load_tbl_version
+    tbl_md, _, schema_version_md = self.load_tbl_md(tbl_id, effective_version)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 891, in load_tbl_md
+    assert row is not None, f'Table record not found: {tbl_id}:{effective_version}'
+           ^^^^^^^^^^^^^^^
+AssertionError: Table record not found: 4d2cac8b-c056-4bc8-a40d-52f88ac8e984:None
+2025-08-18 20:51:27,130 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 20:51:33,524 ERROR: FATAL: Could not connect to primary database table 'agents.tools': Table record not found: a916e0dd-2f04-41a1-a5da-579379839d0c:None [in /home/rogfel/projects/pixelbot/endpoint.py:215]
+Traceback (most recent call last):
+  File "/home/rogfel/projects/pixelbot/endpoint.py", line 208, in <module>
+    tool_agent = pxt.get_table("agents.tools")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/globals.py", line 401, in get_table
+    return Catalog.get().get_table(path_obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 73, in loop
+    return op(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 587, in get_table
+    obj._tbl_version.get().ensure_md_loaded()
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/table_version.py", line 449, in ensure_md_loaded
+    _ = col.value_expr
+        ^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/column.py", line 134, in value_expr
+    self._value_expr = exprs.Expr.from_dict(self.value_expr_dict)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/expr.py", line 528, in from_dict
+    return type_class._from_dict(d, components)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/function_call.py", line 428, in _from_dict
+    fn = func.Function.from_dict(d['fn'])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/func/function.py", line 469, in from_dict
+    return func_class._from_dict(d)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/func/query_template_function.py", line 95, in _from_dict
+    return cls(DataFrame.from_dict(d['df']), Signature.from_dict(d['signature']), name=d['name'])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/dataframe.py", line 1024, in from_dict
+    [(exprs.Expr.from_dict(e), name) for e, name in d['select_list']]
+      ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/expr.py", line 528, in from_dict
+    return type_class._from_dict(d, components)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/column_ref.py", line 283, in _from_dict
+    col = cls.get_column(d)
+          ^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/exprs/column_ref.py", line 276, in get_column
+    tbl_version = catalog.Catalog.get().get_tbl_version(tbl_id, version)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 727, in get_tbl_version
+    self._tbl_versions[tbl_id, effective_version] = self._load_tbl_version(tbl_id, effective_version)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 979, in _load_tbl_version
+    tbl_md, _, schema_version_md = self.load_tbl_md(tbl_id, effective_version)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rogfel/projects/pixelbot/env/lib/python3.12/site-packages/pixeltable/catalog/catalog.py", line 891, in load_tbl_md
+    assert row is not None, f'Table record not found: {tbl_id}:{effective_version}'
+           ^^^^^^^^^^^^^^^
+AssertionError: Table record not found: a916e0dd-2f04-41a1-a5da-579379839d0c:None
+2025-08-18 20:58:19,825 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 20:58:25,555 INFO: Successfully connected to the tools (agent) table [in /home/rogfel/projects/pixelbot/endpoint.py:213]
+2025-08-18 20:58:25,559 INFO: Starting Waitress production server on http://0.0.0.0:5000/... [in /home/rogfel/projects/pixelbot/endpoint.py:2573]
+2025-08-18 21:27:41,341 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
+2025-08-18 21:27:46,747 INFO: Successfully connected to the tools (agent) table [in /home/rogfel/projects/pixelbot/endpoint.py:213]
+2025-08-18 21:27:46,751 INFO: Starting Waitress production server on http://0.0.0.0:5000/... [in /home/rogfel/projects/pixelbot/endpoint.py:2573]
+2025-08-18 21:28:01,752 INFO: No first frames (pos=0) found in video_frames view. [in /home/rogfel/projects/pixelbot/endpoint.py:1176]
+2025-08-18 21:28:01,844 INFO: Fetching all memory items for user local_user [in /home/rogfel/projects/pixelbot/endpoint.py:1599]
+2025-08-18 21:31:41,514 INFO: Application startup [in /home/rogfel/projects/pixelbot/endpoint.py:187]
