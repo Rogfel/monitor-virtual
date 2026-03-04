@@ -178,4 +178,4 @@ data/
 *.doc
 *.xls
 *.xlsx
-logs/
+logs/*

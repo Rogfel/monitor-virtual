@@ -3,8 +3,8 @@
 # --- LLM & Model IDs ---
 # Embedding model for text-based semantic search (documents, transcripts, memory, history)
 # Using a smaller model to avoid GPU memory issues
-# EMBEDDING_MODEL_ID = "intfloat/multilingual-e5-large-instruct"
-EMBEDDING_MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_MODEL_ID = "intfloat/multilingual-e5-large-instruct"
+# EMBEDDING_MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
 # Vision-language model for image/frame semantic search
 CLIP_MODEL_ID = "openai/clip-vit-base-patch32"
 # Audio transcription model
@@ -12,7 +12,7 @@ WHISPER_MODEL_ID = "whisper-1"
 # Image generation model
 DALLE_MODEL_ID = "dall-e-3"
 # Main reasoning LLM (tool use, final answer)
-CLAUDE_MODEL_ID = "claude-3-5-sonnet-latest"
+CLAUDE_MODEL_ID = "claude-sonnet-4-20250514"
 # Follow-up question LLM
 MISTRAL_MODEL_ID = "mistral-small-latest"
 
