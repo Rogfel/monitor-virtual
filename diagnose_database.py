@@ -111,8 +111,8 @@ def check_chunks_status():
             try:
                 view = pxt.get_table(chunk_view)
                 if view is not None:
-                    # Count rows in the view
-                    row_count = len(view)
+                    # Count rows in the view using .count() method
+                    row_count = view.count()
                     chunks_by_type[description] = row_count
                     total_chunks += row_count
                     
@@ -138,7 +138,7 @@ def check_chunks_status():
         try:
             collection = pxt.get_table("agents.collection")
             if collection is not None:
-                collection_count = len(collection)
+                collection_count = collection.count()
                 logger.info(f"📚 Total documents in collection: {collection_count:,}")
             else:
                 collection_count = 0
@@ -150,7 +150,7 @@ def check_chunks_status():
         # Check individual media tables
         media_tables = {
             "agents.images": "Images",
-            "agents.videos": "Videos", 
+            "agents.videos": "Videos",
             "agents.audios": "Audios",
             "agents.tabular": "Tabular data"
         }
@@ -160,7 +160,7 @@ def check_chunks_status():
             try:
                 table = pxt.get_table(table_name)
                 if table is not None:
-                    count = len(table)
+                    count = table.count()
                     media_counts[media_type] = count
                     logger.info(f"📁 {media_type}: {count:,} files")
                 else:

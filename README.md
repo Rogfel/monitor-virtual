@@ -50,17 +50,17 @@ env\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 5. Configure o spaCy
+<!-- ### 5. Configure o spaCy
 
 Execute o script de configuração do spaCy:
 
 ```bash
 bash setup_spacy.sh
-```
+``` -->
 
 Este script instala o modelo de linguagem necessário para o processamento de texto.
 
-### 6. Configure as variáveis de ambiente
+### 5. Configure as variáveis de ambiente
 
 Copie o arquivo de exemplo `.env.example` para `.env`:
 
@@ -144,12 +144,12 @@ monitor-virtual/
 
 Se você encontrar erros de memória, o aplicativo está configurado para usar CPU por padrão. Verifique que `FORCE_CPU = True` está configurado em `config.py`.
 
-### Erro ao carregar modelo spaCy
+<!-- ### Erro ao carregar modelo spaCy
 
 Execute novamente o script de configuração:
 ```bash
 bash setup_spacy.sh
-```
+``` -->
 
 ### Problemas com dependências
 

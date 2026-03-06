@@ -8,26 +8,42 @@ from pixeltable.iterators import DocumentSplitter
 from pixeltable.functions.huggingface import sentence_transformer
 import config
 
+# Reduzir verbosidade do asyncio
+logging.getLogger('asyncio').setLevel(logging.ERROR)
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # File type mappings (same as in endpoint.py)
 ALLOWED_EXTENSIONS = {
-    "pdf", "jpg", "jpeg", "png", "mp4", "mov", "avi", "txt", "md", 
-    "html", "xml", "mp3", "wav", "m4a", "csv", "xlsx"
+    "pdf", "txt", "md", "html", "xml",  # documents
+    "mp4", "mov", "avi", "wmv", "mpe", "mpeg", "mpg",  # videos
+    "jpg", "jpeg", "png",  # images
+    "mp3", "wav", "m4a",  # audio
+    "csv", "xlsx"  # tabular
+}
+
+# Extensions to skip (compressed files that cannot be processed)
+SKIP_EXTENSIONS = {
+    "rar", "zip", "7z", "tar", "gz", "bz2"  # compressed files
 }
 
 def get_file_type_and_column(file_path):
     """Determine file type and corresponding table column based on file extension."""
     file_ext = file_path.rsplit(".", 1)[1].lower() if "." in file_path else ""
     
+    # Skip compressed files
+    if file_ext in SKIP_EXTENSIONS:
+        logger.debug(f"Skipping compressed file: {file_path}")
+        return None, None
+    
     if file_ext not in ALLOWED_EXTENSIONS:
         return None, None
     
     if file_ext in {"pdf", "txt", "md", "html", "xml"}:
         return "document", "document"
-    elif file_ext in {"mp4", "mov", "avi"}:
+    elif file_ext in {"mp4", "mov", "avi", "wmv", "mpe", "mpeg", "mpg"}:
         return "video", "video"
     elif file_ext in {"jpg", "jpeg", "png"}:
         return "image", "image"
@@ -83,7 +99,7 @@ def _load_sources_by_type(table_key, file_path, user_id):
         for file in files:
             if (table_key == 'document' and file.lower().endswith((".pdf", ".txt", ".md", ".html", ".xml"))) or \
             (table_key == 'image' and file.lower().endswith((".jpg", ".jpeg", ".png"))) or \
-            (table_key == 'video' and file.lower().endswith((".mp4", ".mov", ".avi"))) or \
+            (table_key == 'video' and file.lower().endswith((".mp4", ".mov", ".avi", ".wmv", ".mpe", ".mpeg", ".mpg"))) or \
             (table_key == 'audio' and file.lower().endswith((".mp3", ".wav", ".m4a"))) or \
             (table_key == 'tabular' and file.lower().endswith((".csv", ".xlsx"))):
                     files_sources.append(os.path.join(root, file))
@@ -234,13 +250,49 @@ def _insert_files_to_table(files_sources, table, table_key, user_id):
         logger.info("Documents inserted, recreating chunks view...")
         _recreate_chunks_view()
 
+def load_all_from_data(data_path="data", user_id="local_user"):
+    """
+    Load all supported documents and videos from the data/ folder.
+    
+    Args:
+        data_path: Path to the data folder (default: "data")
+        user_id: User ID to associate with the files
+    
+    Returns:
+        Dictionary with counts of loaded files by type
+    """
+    logger.info(f"Loading all sources from: {data_path}")
+    
+    # Verify data folder exists
+    if not os.path.exists(data_path):
+        logger.error(f"Data folder does not exist: {data_path}")
+        return {"error": f"Data folder does not exist: {data_path}"}
+    
+    # Use auto-detect to load all file types
+    load_sources(data_path, table_key=None, user_id=user_id)
+    
+    # Return summary
+    return {
+        "status": "completed",
+        "source_folder": data_path,
+        "message": "All files loaded successfully. Check logs for details."
+    }
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Carregamento de arquivos para o Monitor Virtual")
-    parser.add_argument("--file_path", type=str, help="Caminho para a pasta com os arquivos", required=True)
+    parser.add_argument("--file_path", type=str, help="Caminho para a pasta com os arquivos (padrão: data/)", default="data/")
     parser.add_argument("--table_key", choices=["document", "video", "image", "audio", "tabular"], 
                        help="Chave da tabela para carregamento dos arquivos (opcional - se não especificado, detecta automaticamente)")
     parser.add_argument("--user_id", type=str, default="local_user", 
                        help="ID do usuário para associar aos arquivos (padrão: local_user)")
+    parser.add_argument("--data", action="store_true", 
+                       help="Carregar todos os arquivos da pasta data/ (atalho para --file_path data/)")
     args = parser.parse_args()
     
-    load_sources(args.file_path, args.table_key, args.user_id)
+    # If --data flag is set, use data/ folder
+    if args.data:
+        logger.info("Using --data flag: loading from data/ folder")
+        load_all_from_data("data/", args.user_id)
+    else:
+        load_sources(args.file_path, args.table_key, args.user_id)
