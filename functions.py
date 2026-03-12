@@ -28,6 +28,30 @@ import pixeltable as pxt
 
 
 # Tool UDF: Fetches latest news using NewsAPI.
+
+
+def truncate_text_to_tokens(text: str, max_tokens: int = 500) -> str:
+    """
+    Trunca o texto para caber no limite aproximado de tokens.
+    Estimativa: ~4 caracteres por token.
+    """
+    if not text:
+        return text
+    max_chars = max_tokens * 4
+    if len(text) > max_chars:
+        return text[:max_chars] + "... [truncated]"
+    return text
+
+
+def truncate_doc_text(text: str, max_chars: int = 800) -> str:
+    """
+    Trunca o texto de cada documento individual.
+    """
+    if not text:
+        return text
+    if len(text) > max_chars:
+        return text[:max_chars] + "..."
+    return text
 # Registered as a tool for the LLM via `pxt.tools()` in setup_pixeltable.py.
 @pxt.udf
 def get_latest_news(topic: str) -> str:
@@ -259,7 +283,8 @@ def assemble_multimodal_context(
     doc_context_str = "N/A"
     if doc_context:
         doc_items = []
-        for item in doc_context:
+        # Limitar a no máximo 5 documentos para evitar excesso de tokens
+        for item in list(doc_context)[:5]:
             # Safely extract text and source filename
             text = item.get("text", "") if isinstance(item, dict) else str(item)
             source = (
@@ -269,15 +294,18 @@ def assemble_multimodal_context(
             )
             source_name = os.path.basename(str(source))
             if text:
-                doc_items.append(f"- [Source: {source_name}] {text}")
+                # Truncar cada documento para evitar excesso de tokens
+                truncated_text = truncate_doc_text(text, max_chars=800)
+                doc_items.append(f"- [Source: {source_name}] {truncated_text}")
         if doc_items:
             doc_context_str = "\n".join(doc_items)
 
-    # Format memory bank context
+    # Format memory bank context (limitar a 3 itens)
     memory_context_str = "N/A"
     if memory_context:
         memory_items = []
-        for item in memory_context:
+        # Limitar a 3 itens de memória
+        for item in list(memory_context)[:3]:
             # Safely extract details
             content = item.get("content", "")
             item_type = item.get("type", "unknown")
@@ -291,11 +319,12 @@ Content: {content[:100]}{"..." if len(content) > 100 else ""}"""
         if memory_items:
             memory_context_str = "\n".join(memory_items)
 
-    # Format chat history search context
+    # Format chat history search context (limitar a 3 itens)
     chat_memory_context_str = "N/A"
     if chat_memory_context:
         chat_memory_items = []
-        for item in chat_memory_context:
+        # Limitar a 3 itens de chat history
+        for item in list(chat_memory_context)[:3]:
             content = item.get("content", "")
             role = item.get("role", "unknown")
             sim = item.get("sim")
@@ -309,8 +338,20 @@ Content: {content[:150]}{"..." if len(content) > 150 else ""}"""
         if chat_memory_items:
             chat_memory_context_str = "\n".join(chat_memory_items)
 
-    # Format tool outputs
-    tool_outputs_str = str(tool_outputs) if tool_outputs else "N/A"
+    # Format tool outputs (pode conter transcrições grandes de áudio/vídeo)
+    if tool_outputs:
+        # Truncar tool outputs para evitar excesso de tokens
+        truncated_outputs = []
+        for output in tool_outputs:
+            if isinstance(output, dict) and 'content' in output:
+                content = output.get('content', '')
+                if isinstance(content, str) and len(content) > 2000:
+                    output = output.copy()
+                    output['content'] = content[:2000] + "... [transcription truncated]"
+            truncated_outputs.append(output)
+        tool_outputs_str = str(truncated_outputs)
+    else:
+        tool_outputs_str = "N/A"
 
     # Construct the final summary text block
     text_content = f"""
@@ -331,8 +372,12 @@ AVAILABLE CONTEXT:
 [CHAT HISTORY SEARCH CONTEXT] (Older messages relevant to the query)
 {chat_memory_context_str}
 """
-
-    return text_content.strip()
+    
+    # Limite global de tokens para o contexto total (~4000 tokens = ~16000 caracteres)
+    MAX_TOTAL_CHARS = 16000
+    final_content = truncate_text_to_tokens(text_content.strip(), max_tokens=4000)
+    
+    return final_content
 
 
 # Final Message Assembly UDF: Creates the structured message list for the main LLM.

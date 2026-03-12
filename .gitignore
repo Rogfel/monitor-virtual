@@ -179,3 +179,4 @@ data/
 *.xls
 *.xlsx
 logs/*
+temp_text_files/*

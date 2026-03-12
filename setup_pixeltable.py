@@ -129,7 +129,7 @@ def search_documents(query_text: str, user_id: str):
             heading=chunks.heading,
             page_number=chunks.page
         )
-        .limit(20)
+        .limit(5)
     )
 
 # === IMAGE PROCESSING ===
@@ -311,7 +311,7 @@ def search_video_transcripts(query_text: str):
             source_video=video_transcript_sentences_view.video, # Link back to the video
             sim=sim,
         )
-        .limit(20)
+        .limit(5)  # Reduzido para evitar excesso de tokens
     )
 
 
@@ -398,7 +398,7 @@ def search_audio_transcripts(query_text: str):
             source_audio=audio_transcript_sentences_view.audio, # Link back to the audio file
             sim=sim,
         )
-        .limit(30)
+        .limit(5)  # Reduzido para evitar excesso de tokens
     )
 
 
