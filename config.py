@@ -38,16 +38,16 @@ FINAL_SYSTEM_PROMPT = """Com base no contexto fornecido e na consulta do usuári
 DEFAULT_MAX_TOKENS: int | None = 2000
 DEFAULT_STOP_SEQUENCES: list[str] | None = None  # e.g., ["\n\nHuman:"]
 DEFAULT_TEMPERATURE: float | None = 0.3
-DEFAULT_TOP_K: int | None = None
-DEFAULT_TOP_P: float | None = None
+DEFAULT_TOP_P: float | None = 0.7
+DEFAULT_TOP_K: int = 0  # 0 disables top-k sampling (use None only if you want to omit this parameter)
 
 # --- Consolidated Parameters Dictionary ---
 DEFAULT_PARAMETERS = {
     "max_tokens": DEFAULT_MAX_TOKENS,
     "stop_sequences": DEFAULT_STOP_SEQUENCES,
     "temperature": DEFAULT_TEMPERATURE,
-    "top_k": DEFAULT_TOP_K,
     "top_p": DEFAULT_TOP_P,
+    "top_k": DEFAULT_TOP_K,
 }
 
 # --- Persona Presets Definition --- #
@@ -60,8 +60,8 @@ PERSONA_PRESETS = {
             "max_tokens": 1500,
             "stop_sequences": None,
             "temperature": 0.7,
-            "top_k": None,
-            "top_p": None,
+            "top_p": 0.8,
+            "top_k": 0,  # 0 disables top-k sampling
         }
     },
     "Analista Visual": {
@@ -71,8 +71,8 @@ PERSONA_PRESETS = {
             "max_tokens": 2000,
             "stop_sequences": None,
             "temperature": 0.4,
-            "top_k": None,
-            "top_p": None,
+            "top_p": 0.8,
+            "top_k": 0,
         }
     },
     "Assistente de Pesquisa": {
@@ -82,8 +82,8 @@ PERSONA_PRESETS = {
             "max_tokens": 2500,
             "stop_sequences": None,
             "temperature": 0.6,
-            "top_k": None,
-            "top_p": None,
+            "top_p": 0.8,
+            "top_k": 0,
         }
     },
     "Guia Técnico": {
@@ -93,8 +93,8 @@ PERSONA_PRESETS = {
             "max_tokens": 2000,
             "stop_sequences": None,
             "temperature": 0.3,
-            "top_k": None,
-            "top_p": None,
+            "top_p": 0.8,
+            "top_k": 0,
         }
     }
 }

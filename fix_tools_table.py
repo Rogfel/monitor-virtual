@@ -128,8 +128,8 @@ def recreate_tools_table():
                 "max_tokens": pxt.Int,
                 "stop_sequences": pxt.Json,
                 "temperature": pxt.Float,
-                "top_k": pxt.Int,
                 "top_p": pxt.Float,
+                "top_k": pxt.Int,  # Add top_k parameter to schema
             },
             if_exists="replace",
         )
@@ -150,8 +150,8 @@ def recreate_tools_table():
                 max_tokens=tool_agent.max_tokens,
                 stop_sequences=tool_agent.stop_sequences,
                 temperature=tool_agent.temperature,
-                top_k=tool_agent.top_k,
                 top_p=tool_agent.top_p,
+                top_k=tool_agent.top_k,  # Pass top_k parameter
             ),
             if_exists="replace",
         )
@@ -256,7 +256,6 @@ def recreate_tools_table():
                 max_tokens=tool_agent.max_tokens,
                 stop_sequences=tool_agent.stop_sequences,
                 temperature=tool_agent.temperature,
-                top_k=tool_agent.top_k,
                 top_p=tool_agent.top_p,
             ),
             if_exists="replace",
@@ -334,7 +333,6 @@ def test_tools_table():
             "max_tokens": 1000,
             "stop_sequences": [],
             "temperature": 0.7,
-            "top_k": 50,
             "top_p": 0.9,
         }
         

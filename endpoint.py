@@ -579,8 +579,8 @@ def query():
                     "max_tokens": selected_llm_params.get("max_tokens", config.DEFAULT_PARAMETERS["max_tokens"]),
                     "stop_sequences": selected_llm_params.get("stop_sequences", config.DEFAULT_PARAMETERS["stop_sequences"]),
                     "temperature": selected_llm_params.get("temperature", config.DEFAULT_PARAMETERS["temperature"]),
-                    "top_k": selected_llm_params.get("top_k", config.DEFAULT_PARAMETERS["top_k"]),
                     "top_p": selected_llm_params.get("top_p", config.DEFAULT_PARAMETERS["top_p"]),
+                    "top_k": selected_llm_params.get("top_k", config.DEFAULT_PARAMETERS["top_k"]),
                 }
             ]
         )
@@ -960,7 +960,6 @@ def get_workflow_detail(timestamp_str):
                 max_tokens=workflow_table.max_tokens,
                 stop_sequences=workflow_table.stop_sequences,
                 temperature=workflow_table.temperature,
-                top_k=workflow_table.top_k,
                 top_p=workflow_table.top_p,
             )
             .collect()

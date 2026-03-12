@@ -1157,7 +1157,6 @@ function updateParameterInputs(params) {
 
     setInputValue('param-max_tokens', params.max_tokens);
     setInputValue('param-temperature', params.temperature);
-    setInputValue('param-top_k', params.top_k);
     setInputValue('param-top_p', params.top_p);
     // Join array back into comma-separated string
     setInputValue('param-stop_sequences', (params.stop_sequences || []).join(', '));
@@ -3615,7 +3614,6 @@ function populatePersonaFormForEdit(personaData) {
     const llmParams = personaData.llm_params || {};
     document.getElementById('persona-max_tokens').value = llmParams.max_tokens ?? '';
     document.getElementById('persona-temperature').value = llmParams.temperature ?? '';
-    document.getElementById('persona-top_k').value = llmParams.top_k ?? '';
     document.getElementById('persona-top_p').value = llmParams.top_p ?? '';
     document.getElementById('persona-stop_sequences').value = (llmParams.stop_sequences || []).join(', ');
     document.getElementById('save-new-persona-btn').textContent = 'Update Persona';
@@ -3653,7 +3651,6 @@ async function handleSaveNewPersona(event) {
     try {
         const mtStr = formData.get('max_tokens')?.trim(); if (mtStr) { const mt = parseInt(mtStr); if (isNaN(mt) || mt <= 0) throw new Error('Invalid Max Tokens.'); params.max_tokens = mt; }
         const tStr = formData.get('temperature')?.trim(); if (tStr) { const t = parseFloat(tStr); if (isNaN(t) || t < 0 || t > 2) throw new Error('Invalid Temp (0-2).'); params.temperature = t; }
-        const tkStr = formData.get('top_k')?.trim(); if (tkStr) { const tk = parseInt(tkStr); if (isNaN(tk) || tk <= 0) throw new Error('Invalid Top K.'); params.top_k = tk; }
         const tpStr = formData.get('top_p')?.trim(); if (tpStr) { const tp = parseFloat(tpStr); if (isNaN(tp) || tp < 0 || tp > 1) throw new Error('Invalid Top P (0-1).'); params.top_p = tp; }
         const ssStr = formData.get('stop_sequences')?.trim(); params.stop_sequences = ssStr ? ssStr.split(',').map(s => s.trim()).filter(Boolean) : [];
     } catch (paramError) { paramErrorMessage = `Param Error: ${paramError.message}`; hasParamError = true; }
@@ -3746,7 +3743,6 @@ function resetPersonaForm() {
         document.getElementById('persona-final-prompt').value = '';
         document.getElementById('persona-max_tokens').value = '';
         document.getElementById('persona-temperature').value = '';
-        document.getElementById('persona-top_k').value = '';
         document.getElementById('persona-top_p').value = '';
         document.getElementById('persona-stop_sequences').value = '';
         // --- END ADDED --- //

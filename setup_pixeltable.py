@@ -44,6 +44,11 @@ from pixeltable.functions import openai
 from pixeltable.functions.mistralai import chat_completions as mistral
 
 # - Data transformation tools
+from pixeltable.functions.document import document_splitter
+from pixeltable.functions.video import frame_iterator
+export_audio = extract_audio  # Alias for backward compatibility
+from pixeltable.functions.audio import audio_splitter
+from pixeltable.functions.string import string_splitter
 from pixeltable.iterators import (
     DocumentSplitter,
     FrameIterator,
@@ -62,7 +67,7 @@ load_dotenv(override=True)
 # This provides a clean, hierarchical organization for related tables and views.
 
 # WARNING: The following line will DELETE ALL DATA (TABLES, VIEWS, INDEXES) in the 'agents' directory.
-pxt.drop_dir("agents", force=True)
+# pxt.drop_dir("agents", force=True)
 pxt.create_dir("agents", if_exists="ignore")  # Use if_exists='ignore' to avoid errors if the directory already exists
 
 # === DOCUMENT PROCESSING ===
@@ -81,9 +86,9 @@ print("Created/Loaded 'agents.collection' table")
 chunks = pxt.create_view(
     "agents.chunks",
     documents,
-    iterator=DocumentSplitter.create(
+    iterator=document_splitter(
         document=documents.document,
-        separators="paragraph",  # Use paragraph separator for better chunking
+        separators="page",  # Use paragraph separator for better chunking
         metadata="title, heading, page" # Include metadata from the document
     ),
     if_exists="ignore",
@@ -93,6 +98,7 @@ chunks = pxt.create_view(
 # This enables fast semantic search using vector similarity.
 chunks.add_embedding_index(
     "text",  # The column containing text to index
+    idx_name="text_embedding",
     string_embed=sentence_transformer.using( # Specify the embedding function
         model_id=config.EMBEDDING_MODEL_ID,
         # device="cpu" if config.FORCE_CPU else "auto"
@@ -106,7 +112,7 @@ chunks.add_embedding_index(
 @pxt.query
 def search_documents(query_text: str, user_id: str):
     # Calculate semantic similarity between the query and indexed text chunks.
-    sim = chunks.text.similarity(query_text)
+    sim = chunks.text.similarity(string=query_text, idx="text_embedding")
     # Use Pixeltable's fluent API (similar to SQL) to filter, order, and select results.
     return (
         chunks.where(
@@ -150,11 +156,12 @@ print("Added/verified thumbnail computed column for images.")
 # This enables cross-modal search (text-to-image and image-to-image).
 images.add_embedding_index(
     "image",
+    idx_name="image_clip_embedding",
     embedding=clip.using(
         model_id=config.CLIP_MODEL_ID,
         # device="cpu" if config.FORCE_CPU else "auto"
     ), # Use CLIP model from config with fast processor
-    if_exists="ignore",
+    if_exists="replace",
 )
 
 
@@ -162,7 +169,7 @@ images.add_embedding_index(
 @pxt.query
 def search_images(query_text: str, user_id: str):
     # Calculate similarity between the query text embedding and image embeddings.
-    sim = images.image.similarity(query_text)  # Cross-modal similarity search
+    sim = images.image.similarity(string=query_text, idx="image_clip_embedding")  # Cross-modal similarity search
     print(f"Image search query: {query_text} for user: {user_id}")
     return (
         images.where((images.user_id == user_id) & (sim > 0.25))
@@ -192,7 +199,7 @@ print("Creating video frames view...")
 video_frames_view = pxt.create_view(
     "agents.video_frames",
     videos,
-    iterator=FrameIterator.create(video=videos.video, fps=1), # Extract 1 frame per second
+    iterator=frame_iterator(video=videos.video, fps=1.0), # Extract 1 frame per second
     if_exists="ignore",
 )
 print("Created/Loaded 'agents.video_frames' view")
@@ -201,11 +208,12 @@ print("Created/Loaded 'agents.video_frames' view")
 print("Adding video frame embedding index (CLIP)...")
 video_frames_view.add_embedding_index(
     column="frame",
+    idx_name="video_frame_clip_embedding",
     embedding=clip.using(
         model_id=config.CLIP_MODEL_ID,
         # device="cpu" if config.FORCE_CPU else "auto"
     ),
-    if_exists="ignore",
+    if_exists="replace",
 )
 print("Video frame embedding index created/verified.")
 
@@ -213,7 +221,7 @@ print("Video frame embedding index created/verified.")
 # Define a video frame search query.
 @pxt.query
 def search_video_frames(query_text: str, user_id: str):
-    sim = video_frames_view.frame.similarity(query_text)
+    sim = video_frames_view.frame.similarity(string=query_text, idx="video_frame_clip_embedding")
     print(f"Video Frame search query: {query_text} for user: {user_id}")
     return (
         video_frames_view.where((video_frames_view.user_id == user_id) & (sim > 0.25))
@@ -237,9 +245,9 @@ videos.add_computed_column(
 video_audio_chunks_view = pxt.create_view(
     "agents.video_audio_chunks",
     videos,
-    iterator=AudioSplitter.create(
+    iterator=audio_splitter(
         audio=videos.audio,          # Input column with extracted audio
-        chunk_duration_sec=30.0
+        duration=30.0
     ),
     if_exists="ignore",
 )
@@ -251,7 +259,7 @@ video_audio_chunks_view.add_computed_column(
         audio=video_audio_chunks_view.audio,
         model=config.WHISPER_MODEL_ID,
     ),
-    if_exists="replace", # 'replace' ensures updates if the function or model changes
+    if_exists="ignore", # Use ignore to avoid issues with dependent views
 )
 print("Video audio transcriptions column added/updated.")
 
@@ -261,7 +269,7 @@ video_transcript_sentences_view = pxt.create_view(
     video_audio_chunks_view.where(
         video_audio_chunks_view.transcription != None # Process only chunks with transcriptions
     ),
-    iterator=StringSplitter.create(
+    iterator=string_splitter(
         text=video_audio_chunks_view.transcription.text, # Access the 'text' field from the JSON result
         separators="sentence",
     ),
@@ -278,8 +286,9 @@ sentence_embed_model = sentence_transformer.using(
 print("Adding video transcript sentence embedding index...")
 video_transcript_sentences_view.add_embedding_index(
     column="text",
+    idx_name="video_transcript_embedding",
     string_embed=sentence_embed_model,
-    if_exists="ignore",
+    if_exists="replace",
 )
 print("Video transcript sentence embedding index created/verified.")
 
@@ -293,7 +302,7 @@ def search_video_transcripts(query_text: str):
     Returns:
         A list of video transcript sentences and their source video files.
     """
-    sim = video_transcript_sentences_view.text.similarity(query_text)
+    sim = video_transcript_sentences_view.text.similarity(string=query_text, idx="video_transcript_embedding")
     return (
         video_transcript_sentences_view.where((video_transcript_sentences_view.user_id == 'local_user') & (sim > 0.7))
         .order_by(sim, asc=False)
@@ -331,9 +340,9 @@ print("Sample audio insertion is disabled.")
 audio_chunks_view = pxt.create_view(
     "agents.audio_chunks",
     audios,
-    iterator=AudioSplitter.create(
+    iterator=audio_splitter(
         audio=audios.audio,
-        chunk_duration_sec=60.0
+        duration=60.0
     ),
     if_exists="ignore",
 )
@@ -345,7 +354,7 @@ audio_chunks_view.add_computed_column(
         audio=audio_chunks_view.audio,
         model=config.WHISPER_MODEL_ID,
     ),
-    if_exists="replace",
+    if_exists="ignore",
 )
 print("Direct audio transcriptions column added/updated.")
 
@@ -353,7 +362,7 @@ print("Direct audio transcriptions column added/updated.")
 audio_transcript_sentences_view = pxt.create_view(
     "agents.audio_transcript_sentences",
     audio_chunks_view.where(audio_chunks_view.transcription != None),
-    iterator=StringSplitter.create(
+    iterator=string_splitter(
         text=audio_chunks_view.transcription.text, separators="sentence"
     ),
     if_exists="ignore",
@@ -363,8 +372,9 @@ audio_transcript_sentences_view = pxt.create_view(
 print("Adding direct audio transcript sentence embedding index...")
 audio_transcript_sentences_view.add_embedding_index(
     column="text",
+    idx_name="audio_transcript_embedding",
     string_embed=sentence_embed_model, # Reuse the same sentence model
-    if_exists="ignore",
+    if_exists="replace",
 )
 print("Direct audio transcript sentence embedding index created/verified.")
 
@@ -378,7 +388,7 @@ def search_audio_transcripts(query_text: str):
     Returns:
         A list of audio transcript sentences and their source audio files.
     """
-    sim = audio_transcript_sentences_view.text.similarity(query_text)
+    sim = audio_transcript_sentences_view.text.similarity(string=query_text, idx="audio_transcript_embedding")
     print(f"Direct Audio Transcript search query: {query_text}")
     return (
         audio_transcript_sentences_view.where((audio_transcript_sentences_view.user_id == 'local_user') & (sim > 0.6))
@@ -411,8 +421,9 @@ memory_bank = pxt.create_table(
 print("Adding memory bank content embedding index...")
 memory_bank.add_embedding_index(
     column="content",
+    idx_name="memory_content_embedding",
     string_embed=sentence_embed_model, # Reuse the sentence model
-    if_exists="ignore",
+    if_exists="replace",
 )
 print("Memory bank content embedding index created/verified.")
 
@@ -432,7 +443,7 @@ def get_all_memory(user_id: str):
 # Query for semantic search on memory bank content.
 @pxt.query
 def search_memory(query_text: str, user_id: str):
-    sim = memory_bank.content.similarity(query_text)
+    sim = memory_bank.content.similarity(string=query_text, idx="memory_content_embedding")
     print(f"Memory Bank search query: {query_text} for user: {user_id}")
     return (
         memory_bank.where((memory_bank.user_id == user_id) & (sim > 0.8))
@@ -465,8 +476,9 @@ chat_history = pxt.create_table(
 print("Adding chat history content embedding index...")
 chat_history.add_embedding_index(
     column="content",
+    idx_name="chat_content_embedding",
     string_embed=sentence_embed_model, # Reuse sentence model
-    if_exists="ignore",
+    if_exists="replace",
 )
 print("Chat history content embedding index created/verified.")
 
@@ -485,7 +497,7 @@ def get_recent_chat_history(user_id: str, limit: int = 4): # Default to last 4 m
 # Query for semantic search across the entire chat history.
 @pxt.query
 def search_chat_history(query_text: str, user_id: str):
-    sim = chat_history.content.similarity(query_text)
+    sim = chat_history.content.similarity(string=query_text, idx="chat_content_embedding")
     print(f"Chat History search query: {query_text} for user: {user_id}")
     return (
         chat_history.where((chat_history.user_id == user_id) & (sim > 0.8))
@@ -526,8 +538,7 @@ image_gen_tasks.add_computed_column(
     generated_image=openai.image_generations(
         prompt=image_gen_tasks.prompt,
         model=config.DALLE_MODEL_ID,
-        size="1024x1024",
-        # Add other DALL-E parameters like quality, style if desired
+        model_kwargs={"size": "1024x1024"},
     ),
     if_exists="ignore",
 )
@@ -562,8 +573,8 @@ tool_agent = pxt.create_table(
         "max_tokens": pxt.Int,
         "stop_sequences": pxt.Json,
         "temperature": pxt.Float,
-        "top_k": pxt.Int,
         "top_p": pxt.Float,
+        "top_k": pxt.Int,  # Add top_k parameter
     },
     if_exists="ignore",
 )
@@ -576,25 +587,26 @@ tool_agent = pxt.create_table(
 # Calls Claude via the Pixeltable `messages` function, providing available tools.
 tool_agent.add_computed_column(
     initial_response=messages(
-        model=config.CLAUDE_MODEL_ID,
-        system=tool_agent.initial_system_prompt,
         messages=[{"role": "user", "content": tool_agent.prompt}],
+        model=config.CLAUDE_MODEL_ID,
+        max_tokens=tool_agent.max_tokens,
+        model_kwargs={
+            "system": tool_agent.initial_system_prompt,
+            "stop_sequences": tool_agent.stop_sequences,
+            "temperature": tool_agent.temperature,
+            "top_p": tool_agent.top_p,
+            "top_k": tool_agent.top_k,
+        },
         tools=tools, # Pass the registered tools
         tool_choice=tools.choice(required=True), # Force the LLM to choose a tool
-        # Pass LLM parameters from the input row
-        max_tokens=tool_agent.max_tokens,
-        stop_sequences=tool_agent.stop_sequences,
-        temperature=tool_agent.temperature,
-        top_k=tool_agent.top_k,
-        top_p=tool_agent.top_p,
     ),
-    if_exists="replace", # Replace if the function definition changes
+    if_exists="ignore", # Use ignore to avoid issues with dependent columns
 )
 
 # Step 2: Tool Execution
 # Calls the tool selected by the LLM in the previous step using `invoke_tools`.
 tool_agent.add_computed_column(
-    tool_output=invoke_tools(tools, tool_agent.initial_response), if_exists="replace"
+    tool_output=invoke_tools(tools, tool_agent.initial_response), if_exists="ignore"
 )
 
 # Step 3: Context Retrieval (Parallel Execution)
@@ -603,11 +615,11 @@ tool_agent.add_computed_column(
 
 tool_agent.add_computed_column(
     doc_context=search_documents(tool_agent.prompt, tool_agent.user_id),
-    if_exists="replace",
+    if_exists="ignore",
 )
 
 tool_agent.add_computed_column(
-    image_context=search_images(tool_agent.prompt, tool_agent.user_id), if_exists="replace"
+    image_context=search_images(tool_agent.prompt, tool_agent.user_id), if_exists="ignore"
 )
 
 # Add Video Frame Search Context
@@ -640,7 +652,7 @@ tool_agent.add_computed_column(
         tool_agent.memory_context,
         tool_agent.chat_memory_context,
     ),
-    if_exists="replace",
+    if_exists="ignore",
 )
 
 # Step 6: Assemble Final LLM Messages
@@ -652,30 +664,31 @@ tool_agent.add_computed_column(
         image_context=tool_agent.image_context,
         video_frame_context=tool_agent.video_frame_context,
     ),
-    if_exists="replace",
+    if_exists="ignore",
 )
 
 # Step 7: Final LLM Reasoning (Answer Generation)
 # Calls Claude again with the fully assembled context and history.
 tool_agent.add_computed_column(
     final_response=messages(
-        model=config.CLAUDE_MODEL_ID,
-        system=tool_agent.final_system_prompt,
         messages=tool_agent.final_prompt_messages, # Use the assembled message list
+        model=config.CLAUDE_MODEL_ID,
         max_tokens=tool_agent.max_tokens,
-        stop_sequences=tool_agent.stop_sequences,
-        temperature=tool_agent.temperature,
-        top_k=tool_agent.top_k,
-        top_p=tool_agent.top_p,
+        model_kwargs={
+            "system": tool_agent.final_system_prompt,
+            "stop_sequences": tool_agent.stop_sequences,
+            "temperature": tool_agent.temperature,
+            "top_p": tool_agent.top_p,
+        },
     ),
-    if_exists="replace",
+    if_exists="ignore",
 )
 
 # Step 8: Extract Final Answer Text
 # Simple transformation using Pixeltable expressions.
 tool_agent.add_computed_column(
     answer=tool_agent.final_response.content[0].text,
-    if_exists="replace",
+    if_exists="ignore",
 )
 
 # Step 9: Prepare Prompt for Follow-up LLM
@@ -684,29 +697,31 @@ tool_agent.add_computed_column(
     follow_up_input_message=functions.assemble_follow_up_prompt(
         original_prompt=tool_agent.prompt, answer_text=tool_agent.answer
     ),
-    if_exists="replace",
+    if_exists="ignore",
 )
 
 # Step 10: Generate Follow-up Suggestions (Mistral)
 # Calls Mistral via the Pixeltable integration.
 tool_agent.add_computed_column(
     follow_up_raw_response=mistral(
-        model=config.MISTRAL_MODEL_ID,
         messages=[
             {
                 "role": "user",
                 "content": tool_agent.follow_up_input_message,
             }
         ],
-        max_tokens=150,
-        temperature=0.6,
+        model=config.MISTRAL_MODEL_ID,
+        model_kwargs={
+            "max_tokens": 150,
+            "temperature": 0.6,
+        },
     ),
-    if_exists="replace",
+    if_exists="ignore",
 )
 
 # Step 11: Extract Follow-up Text
 # Simple transformation using Pixeltable expressions.
 tool_agent.add_computed_column(
     follow_up_text=tool_agent.follow_up_raw_response.choices[0].message.content,
-    if_exists="replace",
+    if_exists="ignore",
 )
