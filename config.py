@@ -107,3 +107,9 @@ TABLE_MAP = {
     "audio": "agents.audios",
     "tabular": "agents.tabular",
 }
+
+# --- Admin Configuration ---
+# List of admin email addresses that can access the admin panel
+# Load from environment variable (comma-separated list)
+_admin_emails_env = os.environ.get('ADMIN_EMAILS', '')
+ADMIN_EMAILS = [email.strip() for email in _admin_emails_env.split(',') if email.strip()] if _admin_emails_env else []

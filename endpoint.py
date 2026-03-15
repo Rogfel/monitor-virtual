@@ -40,10 +40,12 @@ from workos import WorkOSClient # Import WorkOSClient class
 
 # Local application imports
 import functions
-import config
 
 # Load environment variables
 load_dotenv(override=True) # Force override of existing OS vars
+
+# Import config after load_dotenv so environment variables are available
+import config
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -122,6 +124,34 @@ def login_required(f):
 
     return decorated_function
 # --- End Login Decorator ---
+
+# --- Admin Decorator ---
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Get user email from g.user (set by login_required)
+        user_email = None
+        
+        if hasattr(g, 'user') and g.user:
+            if isinstance(g.user, dict):
+                user_email = g.user.get('email')
+            else:
+                user_email = getattr(g.user, 'email', None)
+        
+        # Get admin emails from config
+        admin_emails = config.ADMIN_EMAILS
+        
+        # Check if user email is in admin list
+        if user_email and user_email in admin_emails:
+            g.is_admin = True
+            return f(*args, **kwargs)
+        
+        # Not authorized - return 403
+        app.logger.warning(f"Access denied to admin route for user: {user_email}")
+        return jsonify({"error": "Acesso restrito a administradores"}), 403
+    
+    return decorated_function
+# --- End Admin Decorator ---
 
 # Initialize Limiter for rate limiting
 limiter = Limiter(
@@ -329,6 +359,13 @@ def home():
                     # Optionally delete invalid cookie here if needed
 
     # Render the template with the determined authentication status
+    # Check if user is admin and redirect to admin panel
+    if is_authenticated and user_profile:
+        user_email = user_profile.get('email') if isinstance(user_profile, dict) else None
+        if user_email and user_email in config.ADMIN_EMAILS:
+            app.logger.debug(f"User {user_email} is admin, redirecting to admin panel.")
+            return redirect(url_for("admin_panel"))
+    
     try:
         return render_template(
             "index.html",
@@ -338,6 +375,37 @@ def home():
         )
     except Exception as e:
         app.logger.error(f"Error rendering home page: {str(e)}", exc_info=True) # Added exc_info
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/admin")
+@login_required
+@admin_required
+def admin_panel():
+    """Render admin page - only accessible to admin users."""
+    # Get user info from g.user (set by login_required)
+    user_profile = None
+    if hasattr(g, 'user') and g.user:
+        if isinstance(g.user, dict):
+            user_profile = g.user
+        else:
+            user_profile = {
+                'id': getattr(g.user, 'id', None),
+                'email': getattr(g.user, 'email', None),
+                'first_name': getattr(g.user, 'first_name', None),
+                'last_name': getattr(g.user, 'last_name', None)
+            }
+    
+    try:
+        return render_template(
+            "admin.html",
+            user=user_profile,
+            is_authenticated=True,
+            is_admin=True,
+            display_name=user_profile.get('first_name') or user_profile.get('email') or 'Admin' if user_profile else 'Admin'
+        )
+    except Exception as e:
+        app.logger.error(f"Error rendering admin page: {str(e)}", exc_info=True)
         return jsonify({"error": "Internal server error"}), 500
 
 
@@ -366,6 +434,31 @@ def login():
     except Exception as e:
         app.logger.error(f"Error generating WorkOS AuthKit authorization URL: {str(e)}", exc_info=True)
         return jsonify({"error": "Authentication failed"}), 500
+
+
+# --- Debug Route: Show current user info ---
+@app.route("/debug_user")
+@login_required
+def debug_user():
+    """Debug route to show current user info - REMOVE IN PRODUCTION"""
+    user_info = {}
+    if hasattr(g, 'user') and g.user:
+        if isinstance(g.user, dict):
+            user_info = g.user
+        else:
+            user_info = {
+                'id': getattr(g.user, 'id', None),
+                'email': getattr(g.user, 'email', None),
+                'first_name': getattr(g.user, 'first_name', None),
+                'last_name': getattr(g.user, 'last_name', None)
+            }
+    
+    return jsonify({
+        "message": "User debug info - REMOVE IN PRODUCTION",
+        "user": user_info,
+        "admin_emails": config.ADMIN_EMAILS,
+        "is_admin": user_info.get('email') in config.ADMIN_EMAILS if user_info.get('email') else False
+    })
 
 
 @app.route("/auth/callback")
