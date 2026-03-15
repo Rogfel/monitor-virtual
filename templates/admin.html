@@ -79,7 +79,7 @@
 
     <main class="container">
         <!-- Main Content Grid -->
-        <div class="relative">
+        <div class="main-grid relative">
             <!-- Content Area -->
             <article class="content-area bg-white rounded-lg shadow-sm">
                 <nav class="nav-tabs" aria-label="Main navigation">
@@ -96,6 +96,24 @@
                                 <i class="fas fa-history mr-2"></i>Histórico de Chat
                             </button>
                         </li>
+                        <!-- <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="image-history-tab" data-tabs-target="#image-history-panel"
+                                type="button" role="tab" aria-controls="image-history-panel" aria-selected="false">
+                                <i class="fas fa-images mr-2"></i>Generated Images
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="memory-tab" data-tabs-target="#memory-panel" type="button"
+                                role="tab" aria-controls="memory-panel" aria-selected="false">
+                                <i class="fas fa-brain mr-2"></i>Memory Bank
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="how-it-works-tab" data-tabs-target="#how-it-works-panel"
+                                type="button" role="tab" aria-controls="how-it-works-panel" aria-selected="false">
+                                <i class="fas fa-info-circle mr-2"></i>How it Works
+                            </button>
+                        </li> -->
                     </ul>
                 </nav>
 
@@ -919,6 +937,207 @@ memory_bank.add_embedding_index(
                     </div>
                 </div>
             </article>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Search Bar moved below Upload -->
+                <!-- Upload Files Section -->
+                <div class="sidebar-section">
+                    <!-- REMOVED onclick and icon from header -->
+                    <div class="sidebar-header" id="upload-header">
+                        <div class="flex items-center">
+                            <i class="fas fa-folder text-gray-500 sidebar-icon"></i>
+                            <h2 class="text-lg font-semibold">Gerenciamento de Arquivos</h2>
+                        </div>
+                        <!-- Chevron icon removed -->
+                    </div>
+                    <!-- REMOVED hidden class from content div -->
+                    <div id="upload-section" class="sidebar-content">
+                        <!-- <p class="text-xs text-gray-500 mb-4">
+                            Add files by uploading, dropping, or entering a URL.
+                            Pixeltable handles various <a
+                                href="https://docs.pixeltable.com/docs/datastore/bringing-data" target="_blank"
+                                class="text-gray-700 hover:underline">media types</a> and stores references efficiently.
+                        </p> -->
+                        <form id="upload-form" class="space-y-4">
+                            <!-- Upload Box -->
+                            <div
+                                class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-500 transition-colors mb-4">
+                                <input type="file" id="file-input" class="hidden"
+                                    accept=".pdf,.jpg,.jpeg,.png,.mp4,.mov,.avi,.txt,.md,.html,.xml,.mp3,.wav,.m4a"
+                                    multiple>
+                                <label for="file-input" class="cursor-pointer block">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-sm text-gray-600">Arraste e solte arquivos aqui ou clique para
+                                        fazer upload<br>
+                                        <span class="text-xs text-gray-500">(PDF, JPG, PNG, MP4, MP3, WAV, TXT, MD,
+                                            etc.)</span>
+                                    </p>
+                                </label>
+                            </div>
+
+                            <!-- Upload Status (kept separate) -->
+                            <div id="upload-status" class="hidden mt-2">
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded mb-1">
+                                    {# ADDED: Spinner Icon #}
+                                    <i id="upload-progress-spinner"
+                                        class="fas fa-spinner fa-spin text-gray-500 mr-2 hidden"></i>
+                                    <span id="file-name" class="text-sm text-gray-600 truncate mr-2"></span>
+                                    {# REMOVED: Old Progress Bar Container (kept hidden in JS just in case) #}
+                                    {# <div id="upload-progress-container" class="flex-grow hidden">
+                                        <progress id="upload-progress-bar" value="0" max="100"
+                                            class="w-full h-2 rounded-full overflow-hidden"></progress>
+                                    </div> #}
+                                    {# REMOVED: Old Percentage Span (kept hidden in JS just in case) #}
+                                    {# <span id="upload-percentage"
+                                        class="text-xs text-gray-500 ml-2 w-10 text-right hidden">0%</span> #}
+                                    <span id="upload-complete-icon" class="text-green-500 ml-auto hidden"><i
+                                            class="fas fa-check-circle"></i></span> {# Use ml-auto to push icons right
+                                    #}
+                                    <span id="upload-error-icon" class="text-red-500 ml-auto hidden"><i
+                                            class="fas fa-exclamation-circle"></i></span> {# Use ml-auto #}
+                                </div>
+                                <p id="upload-error-message" class="text-xs text-red-600 mt-1"></p> {# For detailed
+                                errors #}
+                            </div>
+
+                            <!-- URL Input Section (moved structure slightly, removed label) -->
+                            <div class="flex space-x-2 items-center">
+                                <input type="url" id="url-input"
+                                    class="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                    placeholder="Ou digite a URL do arquivo...">
+                                <!-- MODIFIED: Replaced text with icon, added tooltip -->
+                                <span class="tooltip-container">
+                                    <button type="button" id="url-submit-button" onclick="handleUrlSubmit()"
+                                        class="w-10 h-10 flex items-center justify-center bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1"
+                                        aria-label="Add URL">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Adicionar URL</span>
+                                </span>
+                            </div>
+                            <div id="url-status" class="mt-2 text-sm"></div>
+                        </form>
+                    </div>
+
+                    <!-- Moved Search Bar Container -->
+                    <div id="sidebar-search-container">
+                        <input type="text" id="sidebar-search" placeholder="Filtrar arquivos por nome...">
+                    </div>
+
+                    <!-- Managed Documents Section -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header sidebar-toggle-button" data-target-id="documents-section">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-gray-500 sidebar-icon"></i>
+                                <h2 class="text-lg font-semibold text-gray-800">Documentos <span id="documents-count"
+                                        class="text-sm font-normal text-gray-400 ml-1"></span></h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="tooltip-container">
+                                    <button type="button"
+                                        class="text-gray-400 hover:text-red-600 p-1.5 rounded hover:bg-gray-100 sidebar-delete-all-btn"
+                                        data-filetype="document">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Excluir todos os documentos</span>
+                                </span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                    id="documents-section-icon"></i>
+                            </div>
+                        </div>
+                        <div id="documents-section" class="sidebar-content hidden">
+                            <div id="documents-list" class="sidebar-file-list space-y-1">
+                                <p class="italic text-gray-400">Carregando documentos...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Managed Images Section -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header sidebar-toggle-button" data-target-id="images-section">
+                            <div class="flex items-center">
+                                <i class="fas fa-image text-gray-500 sidebar-icon"></i>
+                                <h2 class="text-lg font-semibold text-gray-800">Imagens <span id="images-count"
+                                        class="text-sm font-normal text-gray-400 ml-1"></span></h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="tooltip-container">
+                                    <button type="button"
+                                        class="text-gray-400 hover:text-red-600 p-1.5 rounded hover:bg-gray-100 sidebar-delete-all-btn"
+                                        data-filetype="image">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Excluir todas as imagens</span>
+                                </span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                    id="images-section-icon"></i>
+                            </div>
+                        </div>
+                        <div id="images-section" class="sidebar-content hidden">
+                            <div id="images-list" class="sidebar-grid-container">
+                                <p class="italic text-gray-400">Carregando imagens...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Managed Videos Section -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header sidebar-toggle-button" data-target-id="videos-section">
+                            <div class="flex items-center">
+                                <i class="fas fa-video text-gray-500 sidebar-icon"></i>
+                                <h2 class="text-lg font-semibold text-gray-800">Vídeos <span id="videos-count"
+                                        class="text-sm font-normal text-gray-400 ml-1"></span></h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="tooltip-container">
+                                    <button type="button"
+                                        class="text-gray-400 hover:text-red-600 p-1.5 rounded hover:bg-gray-100 sidebar-delete-all-btn"
+                                        data-filetype="video">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Excluir todos os vídeos</span>
+                                </span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                    id="videos-section-icon"></i>
+                            </div>
+                        </div>
+                        <div id="videos-section" class="sidebar-content hidden">
+                            <div id="videos-list" class="sidebar-grid-container">
+                                <p class="italic text-gray-400">Carregando vídeos...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Managed Audios Section (NEW) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header sidebar-toggle-button" data-target-id="audios-section">
+                            <div class="flex items-center">
+                                <i class="fas fa-volume-up text-gray-500 sidebar-icon"></i>
+                                <h2 class="text-lg font-semibold text-gray-800">Áudios <span id="audios-count"
+                                        class="text-sm font-normal text-gray-400 ml-1"></span></h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="tooltip-container">
+                                    <button type="button"
+                                        class="text-gray-400 hover:text-red-600 p-1.5 rounded hover:bg-gray-100 sidebar-delete-all-btn"
+                                        data-filetype="audio">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <span class="custom-tooltip">Excluir todos os áudios</span>
+                                </span>
+                                <i class="fas fa-chevron-down transform transition-transform duration-200"
+                                    id="audios-section-icon"></i>
+                            </div>
+                        </div>
+                        <div id="audios-section" class="sidebar-content hidden">
+                            <div id="audios-list" class="sidebar-file-list space-y-1">
+                                <p class="italic text-gray-400">Carregando áudios...</p>
+                            </div>
+                        </div>
+                    </div>
+
+            </aside>
         </div>
         </div>
     </main>

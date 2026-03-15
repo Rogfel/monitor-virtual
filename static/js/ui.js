@@ -621,7 +621,7 @@ function displayResult(query, data) {
         <div class="result-header" onclick="toggleResultCard(this)" data-result-toggle-target="#${cardId}-content" aria-expanded="true">
             <div class="result-header-content">
                 <i class="fas ${isError ? 'fa-exclamation-circle text-red-500' : 'fa-question-circle text-gray-500'}"></i>
-                <span class="font-medium text-gray-600 mr-2">Question</span>
+                <span class="font-medium text-gray-600 mr-2">Pergunta</span>
                 <span class="result-query-truncated ml-1">${escapeHtml(query)}</span>
             </div>
             <div class="flex items-center gap-3">
@@ -798,7 +798,7 @@ function createSuccessContent(query, data, cardId) {
 
     const answerSectionHtml = `
         <div class="result-subsection-header cursor-default">
-            <div><i class="fas fa-comment-dots text-gray-500"></i><h4>Answer</h4></div>
+            <div><i class="fas fa-comment-dots text-gray-500"></i><h4>Resposta</h4></div>
         </div>
         <div class="result-answer prose prose-sm max-w-none text-gray-800">
             ${marked.parse(data.answer || '')} ${generateAnswerActionButtons(cardId)}
@@ -806,7 +806,7 @@ function createSuccessContent(query, data, cardId) {
 
     const followUpSectionHtml = `
         <div class="follow-up-suggestions-container pt-3 mt-4 border-t border-gray-200" style="display: none;">
-            <h4 class="text-sm font-semibold text-gray-600 mb-2">Suggested follow-up questions:</h4>
+            <h4 class="text-sm font-semibold text-gray-600 mb-2">Sugestões de perguntas:</h4>
             <div class="suggestions-list space-y-1"></div>
         </div>`;
 
@@ -898,7 +898,7 @@ function createContextDetailsSection(metadata) {
 
     return `
         <div class="mt-4 pt-4 border-t border-gray-200 text-sm">
-            <h5 class="font-semibold text-gray-700 mb-2 flex items-center"><i class="fas fa-info-circle mr-2 text-gray-500"></i>Details</h5>
+            <h5 class="font-semibold text-gray-700 mb-2 flex items-center"><i class="fas fa-info-circle mr-2 text-gray-500"></i>Detalhes</h5>
             ${typesHtml}
             ${timeHtml}
         </div>`;
