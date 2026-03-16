@@ -14,8 +14,8 @@ Um agente multimodal de IA construído usando Pixeltable, Flask e vários modelo
 ## Pré-requisitos
 
 - Python 3.9 ou superior
--至少 8GB de RAM (16GB recomendado)
-- Acesso à internet para下载 modelos e APIs
+- 8GB de RAM (16GB recomendado)
+- Acesso à internet para modelos e APIs
 
 ## Instalação
 
@@ -50,16 +50,6 @@ env\Scripts\activate
 pip install -r requirements.txt
 ```
 
-<!-- ### 5. Configure o spaCy
-
-Execute o script de configuração do spaCy:
-
-```bash
-bash setup_spacy.sh
-``` -->
-
-Este script instala o modelo de linguagem necessário para o processamento de texto.
-
 ### 5. Configure as variáveis de ambiente
 
 Copie o arquivo de exemplo `.env.example` para `.env`:
@@ -92,6 +82,24 @@ AUTH_MODE=local
 - **Mistral AI**: [mistral.ai](https://mistral.ai/)
 - **News API** (opcional): [newsapi.org](https://newsapi.org/)
 
+### 6. Configure o Pixeltable
+
+Execute o script de configuração:
+
+```bash
+python setup_pixeltable.py
+```
+
+### 7. Carregue os dados iniciais
+
+```bash
+python load_sources.py --file_path data/ --no-recreate-chunks
+```
+
+Isso carregará os documentos de exemplo na pasta `data/`.
+
+**Nota:** Se você estiver usando um banco de dados existente, adicione o parâmetro `--no-recreate-chunks` para evitar a recriação de chunks.
+
 ## Executando o Aplicativo
 
 ### Inicie o servidor Flask
@@ -106,16 +114,11 @@ O servidor será iniciado em `http://localhost:5000`.
 
 Abra seu navegador e vá para: **http://localhost:5000**
 
-<!-- ## Carregando Dados
-
-Para adicionar seus próprios documentos e dados, use o script `load_sources.py`:
-
-```bash
-python load_sources.py --file_path /caminho/para/seus/arquivos/ --table_key document
-``` -->
+Acesso para o admin: **http://localhost:5000/admin**
+usuario no .env ADMIN_EMAILS
 
 Tipos de dados suportados:
-- `document` - PDF, Word, texto
+- `document` - PDF, texto
 - `image` - Imagens (PNG, JPG, etc.)
 - `video` - Vídeos
 - `audio` - Arquivos de áudio
@@ -130,9 +133,7 @@ monitor-virtual/
 ├── functions.py            # Funções auxiliares
 ├── load_sources.py         # Script para carregar dados
 ├── setup_pixeltable.py     # Configuração do Pixeltable
-├── setup_spacy.sh          # Script de configuração do spaCy
 ├── requirements.txt        # Dependências Python
-├── pyproject.toml          # Configuração do projeto
 ├── static/                 # Arquivos estáticos (CSS, JS, imagens)
 ├── templates/              # Templates HTML
 └── .env                    # Variáveis de ambiente (não versionado)
@@ -144,19 +145,6 @@ monitor-virtual/
 
 Se você encontrar erros de memória, o aplicativo está configurado para usar CPU por padrão. Verifique que `FORCE_CPU = True` está configurado em `config.py`.
 
-<!-- ### Erro ao carregar modelo spaCy
-
-Execute novamente o script de configuração:
-```bash
-bash setup_spacy.sh
-``` -->
-
-### Problemas com dependências
-
-Tente reinstalar as dependências:
-```bash
-pip install --upgrade -r requirements.txt
-```
 
 ## Licença
 
