@@ -890,7 +890,7 @@ function createContextDetailsSection(metadata) {
     const queryTimestamp = metadata.timestamp ? new Date(metadata.timestamp).toLocaleString() : 'N/A';
     const timeHtml = `
         <div class="flex items-center">
-            <span class="w-20 flex-shrink-0 text-gray-500">Processed:</span>
+            <span class="w-10 flex-shrink-0 text-gray-500">Data:</span>
             <span class="text-gray-600">${queryTimestamp}</span>
         </div>`;
 
@@ -898,8 +898,7 @@ function createContextDetailsSection(metadata) {
 
     return `
         <div class="mt-4 pt-4 border-t border-gray-200 text-sm">
-            <h5 class="font-semibold text-gray-700 mb-2 flex items-center"><i class="fas fa-info-circle mr-2 text-gray-500"></i>Detalhes</h5>
-            ${typesHtml}
+            <h5 class="font-semibold text-gray-700 mb-2 flex items-center"><i class="fas fa-info-circle mr-2 text-gray-500"></i>Detalhes</h5>    
             ${timeHtml}
         </div>`;
 }
