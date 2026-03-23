@@ -437,28 +437,28 @@ def login():
 
 
 # --- Debug Route: Show current user info ---
-@app.route("/debug_user")
-@login_required
-def debug_user():
-    """Debug route to show current user info - REMOVE IN PRODUCTION"""
-    user_info = {}
-    if hasattr(g, 'user') and g.user:
-        if isinstance(g.user, dict):
-            user_info = g.user
-        else:
-            user_info = {
-                'id': getattr(g.user, 'id', None),
-                'email': getattr(g.user, 'email', None),
-                'first_name': getattr(g.user, 'first_name', None),
-                'last_name': getattr(g.user, 'last_name', None)
-            }
+# @app.route("/debug_user")
+# @login_required
+# def debug_user():
+#     """Debug route to show current user info - REMOVE IN PRODUCTION"""
+#     user_info = {}
+#     if hasattr(g, 'user') and g.user:
+#         if isinstance(g.user, dict):
+#             user_info = g.user
+#         else:
+#             user_info = {
+#                 'id': getattr(g.user, 'id', None),
+#                 'email': getattr(g.user, 'email', None),
+#                 'first_name': getattr(g.user, 'first_name', None),
+#                 'last_name': getattr(g.user, 'last_name', None)
+#             }
     
-    return jsonify({
-        "message": "User debug info - REMOVE IN PRODUCTION",
-        "user": user_info,
-        "admin_emails": config.ADMIN_EMAILS,
-        "is_admin": user_info.get('email') in config.ADMIN_EMAILS if user_info.get('email') else False
-    })
+#     return jsonify({
+#         "message": "User debug info - REMOVE IN PRODUCTION",
+#         "user": user_info,
+#         "admin_emails": config.ADMIN_EMAILS,
+#         "is_admin": user_info.get('email') in config.ADMIN_EMAILS if user_info.get('email') else False
+#     })
 
 
 @app.route("/auth/callback")
